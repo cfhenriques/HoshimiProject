@@ -16,7 +16,7 @@ namespace AASMAHoshimi
         protected int _explorersAlive;
         protected int _needlesAlive;
         protected AASMAAI _nanoBotAI;
-         
+
         #region Needle Members
         private List<Point> _needlePoints = new List<Point>();
         private List<Point> _emptyNeedlePoints = new List<Point>();
