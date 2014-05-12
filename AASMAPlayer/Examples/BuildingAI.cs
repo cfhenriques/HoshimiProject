@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using AASMAHoshimi;
 using PH.Common;
+using System.Drawing;
 
 namespace AASMAHoshimi.Examples
 {
     public class BuildingAI : AASMAAI
     {
+        List<Point> needlesBuilt = new List<Point>();
         bool b = false;
 
         public BuildingAI(NanoAI nanoAI) : base(nanoAI)
@@ -44,14 +46,19 @@ namespace AASMAHoshimi.Examples
             
             if (this._nanoAI.State == NanoBotState.WaitingOrders)
             {
-                if (getAASMAFramework().protectorsAlive() < 5)
-                    this._nanoAI.Build(typeof(ShootingProtector), "P" + this._protectorNumber++);
-                else if (getAASMAFramework().explorersAlive() < 5)
-                    this._nanoAI.Build(typeof(ForwardExplorer), "E" + this._explorerNumber++);
-                else if (getAASMAFramework().containersAlive() < 3)
-                    this._nanoAI.Build(typeof(PassiveContainer), "C" + this._containerNumber++);
-                else if (getAASMAFramework().overHoshimiPoint(this._nanoAI) && !getAASMAFramework().overNeedle(this._nanoAI))
+                if (getAASMAFramework().overHoshimiPoint(this._nanoAI) && 
+                    !getAASMAFramework().overNeedle(this._nanoAI) &&
+                    !needlesBuilt.Contains(this._nanoAI.Location))
+                {
                     this._nanoAI.Build(typeof(PassiveNeedle), "N" + this._needleNumber++);
+                    needlesBuilt.Add(this._nanoAI.Location);
+                }
+                else if (getAASMAFramework().protectorsAlive() < 2)
+                    this._nanoAI.Build(typeof(ShootingProtector), "P" + this._protectorNumber++);
+                else if (getAASMAFramework().explorersAlive() < 2)
+                    this._nanoAI.Build(typeof(ForwardExplorer), "E" + this._explorerNumber++);
+                else if (getAASMAFramework().containersAlive() < 2)
+                    this._nanoAI.Build(typeof(PassiveContainer), "C" + this._containerNumber++);
                 else
                     Move();
                 
@@ -62,10 +69,25 @@ namespace AASMAHoshimi.Examples
 
         }
 
-        public void Move()
+
+        private void Move()
         {
-            //the frontClear method returns true if the agent can move to the position in front of his current direction
-            if (frontClear())
+            Point nearestHoshimiPoint = Point.Empty;
+            int distToHoshimiPoint = Int16.MaxValue;
+
+            foreach (Point hoshPosition in getAASMAFramework().visibleHoshimies(this._nanoAI))
+            {
+                if (!needlesBuilt.Contains(hoshPosition) &&
+                    Utils.SquareDistance(this._nanoAI.Location, hoshPosition) < distToHoshimiPoint)
+                {
+                    distToHoshimiPoint = Utils.SquareDistance(this._nanoAI.Location, hoshPosition);
+                    nearestHoshimiPoint = hoshPosition;
+                }
+            }
+
+            if (!nearestHoshimiPoint.IsEmpty && getAASMAFramework().isMovablePoint(nearestHoshimiPoint))
+                this._nanoAI.MoveTo(nearestHoshimiPoint);
+            else if (frontClear())
                 this.MoveForward();
             else
                 this.RandomTurn();
