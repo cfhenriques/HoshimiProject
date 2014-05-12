@@ -10,7 +10,7 @@ namespace AASMAHoshimi.Examples
     [Characteristics(ContainerCapacity = 0, CollectTransfertSpeed = 0, Scan = 30, MaxDamage = 0, DefenseDistance = 0, Constitution = 10)]
     public class ForwardExplorer : AASMAExplorer
     {
-        List<Point> reachedNavPoints = new List<Point>();
+    //    List<Point> reachedNavPoints = new List<Point>();
 
         public override void DoActions()
         {
@@ -25,7 +25,7 @@ namespace AASMAHoshimi.Examples
 
             foreach (Point navPosition in getAASMAFramework().visibleNavigationPoints(this))
             {
-                if (!reachedNavPoints.Contains(navPosition) && Utils.SquareDistance(this.Location, navPosition) < distToNavPoint)
+                if (Utils.SquareDistance(this.Location, navPosition) < distToNavPoint)
                 {
                     distToNavPoint = Utils.SquareDistance(this.Location, navPosition);
                     nearestNavPoint = navPosition;
@@ -34,7 +34,6 @@ namespace AASMAHoshimi.Examples
 
             if (!nearestNavPoint.IsEmpty && getAASMAFramework().isMovablePoint(nearestNavPoint))
             {
-                reachedNavPoints.Add(nearestNavPoint);
                 this.MoveTo(nearestNavPoint);
             }
             else if (frontClear())

@@ -9,7 +9,6 @@ namespace AASMAHoshimi.Examples
 {
     public class BuildingAI : AASMAAI
     {
-        List<Point> needlesBuilt = new List<Point>();
         bool b = false;
 
         public BuildingAI(NanoAI nanoAI) : base(nanoAI)
@@ -47,12 +46,8 @@ namespace AASMAHoshimi.Examples
             if (this._nanoAI.State == NanoBotState.WaitingOrders)
             {
                 if (getAASMAFramework().overHoshimiPoint(this._nanoAI) && 
-                    !getAASMAFramework().overNeedle(this._nanoAI) &&
-                    !needlesBuilt.Contains(this._nanoAI.Location))
-                {
+                    !getAASMAFramework().overNeedle(this._nanoAI))
                     this._nanoAI.Build(typeof(PassiveNeedle), "N" + this._needleNumber++);
-                    needlesBuilt.Add(this._nanoAI.Location);
-                }
                 else if (getAASMAFramework().protectorsAlive() < 2)
                     this._nanoAI.Build(typeof(ShootingProtector), "P" + this._protectorNumber++);
                 else if (getAASMAFramework().explorersAlive() < 2)
@@ -77,8 +72,9 @@ namespace AASMAHoshimi.Examples
 
             foreach (Point hoshPosition in getAASMAFramework().visibleHoshimies(this._nanoAI))
             {
-                if (!needlesBuilt.Contains(hoshPosition) &&
-                    Utils.SquareDistance(this._nanoAI.Location, hoshPosition) < distToHoshimiPoint)
+                if (Utils.SquareDistance(this._nanoAI.Location, hoshPosition) < distToHoshimiPoint &&
+                    !getAASMAFramework().visibleFullNeedles(this._nanoAI).Contains(hoshPosition) &&
+                    !getAASMAFramework().visibleEmptyNeedles(this._nanoAI).Contains(hoshPosition))
                 {
                     distToHoshimiPoint = Utils.SquareDistance(this._nanoAI.Location, hoshPosition);
                     nearestHoshimiPoint = hoshPosition;
