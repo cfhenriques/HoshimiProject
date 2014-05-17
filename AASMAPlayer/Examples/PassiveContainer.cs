@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Drawing;
+using System.Diagnostics;
 using PH.Common;
 
 namespace AASMAHoshimi.Examples
@@ -31,7 +33,41 @@ namespace AASMAHoshimi.Examples
 
         private void Move()
         {
-            if (frontClear())
+            int robotScanDistance = this.Scan + PH.Common.Utils.ScanLength;
+            int sqrRobotScanDistance = robotScanDistance * robotScanDistance;
+
+            int mindist = Int16.MaxValue;
+            int dist ;
+
+            Point destPoint = Point.Empty;
+
+            if(this.Stock.Equals(this.ContainerCapacity))
+                foreach (Point needle in getAASMAFramework().visibleEmptyNeedles(this))
+                {
+                    dist = Utils.SquareDistance(this.Location, needle);
+                    if (dist < sqrRobotScanDistance)
+                    {
+                        mindist = dist;
+                        destPoint = needle;
+                    }
+                }
+            else
+                foreach (Point aznPoint in getAASMAFramework().visibleAznPoints(this))
+                {
+                    dist = Utils.SquareDistance(this.Location, aznPoint);
+                    if( dist < sqrRobotScanDistance)
+                    {
+                        mindist = dist;
+                        destPoint = aznPoint;
+                    }
+                }
+                
+
+            if (!destPoint.IsEmpty) {
+                System.Diagnostics.Debug.WriteLine("Container Capacity: " + this.NanoBotInfo.Stock);
+                this.MoveTo(destPoint);
+            }
+            else if (frontClear())
                 this.MoveForward();
             else
                 this.RandomTurn();

@@ -10,7 +10,7 @@ namespace AASMAHoshimi.Examples
     //however, it is frequent that pierre's neurocontrollers kill the protector before he sees it
     //note that the shooting range is greater than the scan range
     [Characteristics(ContainerCapacity = 0, CollectTransfertSpeed = 0, Scan = 5, MaxDamage = 5, DefenseDistance = 12, Constitution = 28)]
-    public class ShootingProtector : AASMAProtector
+    public class RandomProtector : AASMAProtector
     {
         public override void  DoActions()
         {
@@ -26,7 +26,16 @@ namespace AASMAHoshimi.Examples
 
         public void Move()
         {
-            if (frontClear())
+            Point teamPierreInjPoint = getAASMAFramework().PierreTeamInjectionPoint;
+            int dist = Utils.SquareDistance(this.Location, teamPierreInjPoint);
+
+            int robotScanDistance = this.Scan + PH.Common.Utils.ScanLength;
+            int sqrRobotScanDistance = robotScanDistance * robotScanDistance;
+
+
+            if (dist < sqrRobotScanDistance)
+                this.MoveTo(Utils.getPointInFront(teamPierreInjPoint, Utils.direction.NE));
+            else if (frontClear())
                 this.MoveForward();
             else
                 this.RandomTurn();
