@@ -26,16 +26,7 @@ namespace AASMAHoshimi.Examples
 
         public void Move()
         {
-            Point teamPierreInjPoint = getAASMAFramework().PierreTeamInjectionPoint;
-            int dist = Utils.SquareDistance(this.Location, teamPierreInjPoint);
-
-            int robotScanDistance = this.Scan + PH.Common.Utils.ScanLength;
-            int sqrRobotScanDistance = robotScanDistance * robotScanDistance;
-
-
-            if (dist < sqrRobotScanDistance)
-                this.MoveTo(Utils.getPointInFront(teamPierreInjPoint, Utils.direction.NE));
-            else if (frontClear())
+            if (frontClear())
                 this.MoveForward();
             else
                 this.RandomTurn();

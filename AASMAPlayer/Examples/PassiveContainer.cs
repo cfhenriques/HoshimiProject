@@ -63,7 +63,7 @@ namespace AASMAHoshimi.Examples
                 }
                 
 
-            if (!destPoint.IsEmpty) {
+            if (!destPoint.IsEmpty && this.getAASMAFramework().isMovablePoint(destPoint)) {
                 System.Diagnostics.Debug.WriteLine("Container Capacity: " + this.NanoBotInfo.Stock);
                 this.MoveTo(destPoint);
             }
