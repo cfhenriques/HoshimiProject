@@ -19,25 +19,27 @@ namespace AASMAHoshimi.Examples
         {   
             if (this._nanoAI.State == NanoBotState.WaitingOrders)
             {
+
                 if (getAASMAFramework().overHoshimiPoint(this._nanoAI) && 
                     !getAASMAFramework().overNeedle(this._nanoAI))
                     this._nanoAI.Build(typeof(PassiveNeedle), "N" + this._needleNumber++);
-                else if (getAASMAFramework().protectorsAlive() < 3)
+                else if (getAASMAFramework().protectorsAlive() < 7)
                 {
+                    int rand = Utils.randomValue(3);
 
-                  //  int rand = Utils.randomValue(2);
-
-                  //  if(rand.Equals(0))
-                  //      this._nanoAI.Build(typeof(RandomProtector), "RP" + this._protectorNumber++);
-                  //  else
+                    if(rand == 0)
+                        this._nanoAI.Build(typeof(RandomProtector), "RP" + this._protectorNumber++);
+                    else if(rand == 1)
                         this._nanoAI.Build(typeof(AIProtector), "AIP" + this._protectorNumber++);
+                    else
+                    this._nanoAI.Build(typeof(ContainerProtector), "CP" + this._protectorNumber++);
                     
                 }
-
+                else if (getAASMAFramework().containersAlive() < 2)
+                    this._nanoAI.Build(typeof(PassiveContainer), "C" + this._containerNumber++);
              /*   else if (getAASMAFramework().explorersAlive() < 2)
-                    this._nanoAI.Build(typeof(ForwardExplorer), "E" + this._explorerNumber++); */
-            /*    else if (getAASMAFramework().containersAlive() < 2)
-                    this._nanoAI.Build(typeof(PassiveContainer), "C" + this._containerNumber++);    */
+                    this._nanoAI.Build(typeof(ForwardExplorer), "E" + this._explorerNumber++);          */
+                    
                 else
                     Move();
                 

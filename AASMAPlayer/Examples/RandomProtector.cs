@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using PH.Common;
+using System.Diagnostics;
 
 namespace AASMAHoshimi.Examples
 {
@@ -14,6 +15,7 @@ namespace AASMAHoshimi.Examples
     {
         public override void  DoActions()
         {
+
             if (this.State == NanoBotState.WaitingOrders)
             {
                 if(hasVisibleEnemies())
@@ -49,8 +51,37 @@ namespace AASMAHoshimi.Examples
                 //we need to test if the enemy is within firing distance.
                 if (sqrDistanceToEnemy <= sqrDefenceDistance)
                 {
+                    Debug.WriteLine(this.InternalName + " Attacking Enemy!!!!!!!!");
                     //the defendTo commands fires to the specified position for a number of specified turns. 1 is the recommended number of turns.
-                    this.DefendTo(enemyPosition, 1);
+                    this.DefendTo(enemyPosition, 2);
+                }
+                else
+                {
+                    int x = this.Location.X;
+                    int y = this.Location.Y;
+                    
+                    if (this.Location.X < enemyPosition.X)
+                        x++;
+                    else
+                        x--;
+
+                    if (this.Location.Y < enemyPosition.Y)
+                        y++;
+                    else
+                        y--;
+
+                    Point dest = new Point(x, y);
+                    if (getAASMAFramework().isMovablePoint(dest)) {
+                        this.MoveTo(dest);
+                        Debug.WriteLine(this.InternalName + " Moving towards enemy");
+                    }
+                    else
+                    {
+                        Debug.WriteLine(this.InternalName + " Moving randomly to enemy");
+                        Move();
+
+                    }
+
                 }
             }
         }

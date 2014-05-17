@@ -14,7 +14,7 @@ namespace AASMAHoshimi.Examples
         MaxDamage = 5, 
         DefenseDistance = 12, 
         Constitution = 28)]
-    public class AIProtector : AASMAProtector
+    public class ContainerProtector : AASMAProtector
     {
         public override void DoActions()
         {
@@ -35,31 +35,34 @@ namespace AASMAHoshimi.Examples
 
         private void Move()
         {
-            //Debug.WriteLine(this.NanoBotInfo.InternalName + " Move");
             int robotScanDistance = this.Scan + PH.Common.Utils.ScanLength;
             int sqrRobotScanDistance = robotScanDistance * robotScanDistance;
 
-            { // searching for AI
-                Point _AIlocation = this.PlayerOwner.AI.Location;
-                int sqrDistanceToAI = Utils.SquareDistance(this.Location, _AIlocation);
+            { // searching for Container
 
-                if (sqrDistanceToAI < sqrRobotScanDistance)
-                {
-                    Utils.direction randDir;
-
-                    for (int i = 0; i < 4; i++)
+                foreach(NanoBot bot in this.PlayerOwner.NanoBots)
+                    if(bot is PassiveContainer)
                     {
-                        randDir = Utils.RandomDirection();
+                        int sqrDistanceToBot = Utils.SquareDistance(this.Location, bot.Location);
 
-                        if (getAASMAFramework().isMovablePoint(Utils.getPointInFront(_AIlocation, randDir)))
+                        if (sqrDistanceToBot < sqrRobotScanDistance)
                         {
-                            this.MoveTo((Utils.getPointInFront(_AIlocation, randDir)));
-                            return;
+                            Utils.direction randDir;
+                            for (int i = 0; i < 4; i++)
+                            {
+                                randDir = Utils.RandomDirection();
+
+                                if (getAASMAFramework().isMovablePoint(Utils.getPointInFront(bot.Location, randDir)))
+                                {
+                                    Debug.WriteLine(this.NanoBotInfo.InternalName + " Moving towards Container");
+                                    this.MoveTo((Utils.getPointInFront(bot.Location, randDir)));
+                                    return;
+                                }
+
+                            }
+
                         }
-
                     }
-
-                }
             }
 
             if (frontClear())
