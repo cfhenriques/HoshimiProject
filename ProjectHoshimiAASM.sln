@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AASMAHoshimi", "AASMAPlayer\AASMAHoshimi.csproj", "{C1995BDF-2AE4-4F2E-B8DE-C924473466A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reactive_AASMAHoshimi", "AASMAPlayer\Reactive_AASMAHoshimi.csproj", "{C1995BDF-2AE4-4F2E-B8DE-C924473466A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
