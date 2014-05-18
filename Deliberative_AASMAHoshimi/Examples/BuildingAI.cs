@@ -23,7 +23,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                 if (getAASMAFramework().overHoshimiPoint(this._nanoAI) && 
                     !getAASMAFramework().overNeedle(this._nanoAI))
                     this._nanoAI.Build(typeof(PassiveNeedle), "N" + this._needleNumber++);
-                else if (getAASMAFramework().protectorsAlive() < 7)
+              /*  else if (getAASMAFramework().protectorsAlive() < 7)
                 {
                     int rand = Utils.randomValue(2);
 
@@ -36,11 +36,11 @@ namespace Deliberative_AASMAHoshimi.Examples
                 //    else
                 //        this._nanoAI.Build(typeof(NeedleProtector), "NP" + this._protectorNumber++);
                     
-                }
-                else if (getAASMAFramework().containersAlive() < 2)
-                    this._nanoAI.Build(typeof(PassiveContainer), "C" + this._containerNumber++);
-             /*   else if (getAASMAFramework().explorersAlive() < 2)
-                    this._nanoAI.Build(typeof(ForwardExplorer), "E" + this._explorerNumber++);          */
+                } */
+               /* else if (getAASMAFramework().containersAlive() < 2)
+                    this._nanoAI.Build(typeof(PassiveContainer), "C" + this._containerNumber++); */
+                else if (getAASMAFramework().explorersAlive() < 2)
+                    this._nanoAI.Build(typeof(ForwardExplorer), "E" + this._explorerNumber++);          
                     
                 else
                     Move();
