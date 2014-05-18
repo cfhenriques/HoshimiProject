@@ -21,37 +21,11 @@ namespace AASMAHoshimi.Examples
             //Debug.WriteLine(this.NanoBotInfo.InternalName + " DoActions");
             if(this.State == NanoBotState.WaitingOrders)
             {
-            /*    List<Point> enemies = this.getAASMAFramework().visiblePierres(this);
-                if (enemies.Count > 0) {
-                    foreach(Point p in enemies) {
-                        if (AttackEnemy(p))
-                            return;
-                    }
-                }
-             */
                 if (canAttack())
                     AttackEnemy();
                 else
                     Move();
             }
-        }
-
-        private bool canAttack()
-        {
-
-            int sqrDefenceDistance, sqrDistanceToEnemy;
-
-            foreach (Point enemy in getAASMAFramework().visiblePierres(this))
-            {
-                sqrDefenceDistance = this.DefenseDistance * this.DefenseDistance;
-                sqrDistanceToEnemy = Utils.SquareDistance(this.Location, enemy);
-
-                if (sqrDistanceToEnemy <= sqrDefenceDistance)
-                    return true;
-            }
-
-            return false;
-
         }
 
         private void Move()
@@ -65,7 +39,7 @@ namespace AASMAHoshimi.Examples
                 int sqrDistanceToAI = Utils.SquareDistance(this.Location, _AIlocation);
 
                 if ( sqrDistanceToAI < sqrRobotScanDistance &&
-                     sqrDistanceToAI <= 18 ) // 8 = 2^2 * 2^2;        // if he's near AI
+                     sqrDistanceToAI <= 18 ) // 18 = 3^2 * 3^2;        // if he's near AI
                 {
                     Utils.direction randDir;
 
@@ -113,25 +87,6 @@ namespace AASMAHoshimi.Examples
                 this.RandomTurn();
         }
 
-
-        private void AttackEnemy()
-        {
-            int sqrDefenceDistance, sqrDistanceToEnemy;
-
-
-            foreach (Point enemyPosition in getAASMAFramework().visiblePierres(this))
-            {
-                sqrDefenceDistance = this.DefenseDistance * this.DefenseDistance;
-                sqrDistanceToEnemy = Utils.SquareDistance(this.Location, enemyPosition);
-
-                if (sqrDistanceToEnemy < sqrDefenceDistance)
-                {
-                    this.DefendTo(enemyPosition, 2);
-                    return;
-                }
-            }
-            
-        }
 
         public override void receiveMessage(AASMAMessage msg)
         {

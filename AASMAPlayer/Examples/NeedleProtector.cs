@@ -21,15 +21,10 @@ namespace AASMAHoshimi.Examples
             //Debug.WriteLine(this.NanoBotInfo.InternalName + " DoActions");
             if(this.State == NanoBotState.WaitingOrders)
             {
-                List<Point> enemies = this.getAASMAFramework().visiblePierres(this);
-                if (enemies.Count > 0) {
-                    foreach(Point p in enemies) {
-                        if (AttackEnemy(p))
-                            return;
-                    }
-                }
-                
-                Move();
+                if (canAttack())
+                    AttackEnemy();
+                else
+                    Move();
             }
         }
 
@@ -38,14 +33,14 @@ namespace AASMAHoshimi.Examples
             int robotScanDistance = this.Scan + PH.Common.Utils.ScanLength;
             int sqrRobotScanDistance = robotScanDistance * robotScanDistance;
 
-            { // searching for Container
+            { // searching for Protector
 
                 foreach(NanoBot bot in this.PlayerOwner.NanoBots)
                     if(bot is PassiveNeedle)
                     {
                         int sqrDistanceToBot = Utils.SquareDistance(this.Location, bot.Location);
 
-                        if (sqrDistanceToBot < sqrRobotScanDistance)
+                        if (sqrDistanceToBot < sqrRobotScanDistance/* && sqrDistanceToBot < 18*/)
                         {
                             Utils.direction randDir;
                             for (int i = 0; i < 4; i++)
@@ -54,7 +49,7 @@ namespace AASMAHoshimi.Examples
 
                                 if (getAASMAFramework().isMovablePoint(Utils.getPointInFront(bot.Location, randDir)))
                                 {
-                                    Debug.WriteLine(this.NanoBotInfo.InternalName + " Moving towards Container");
+                                    Debug.WriteLine(this.NanoBotInfo.InternalName + " Moving towards Needle");
                                     this.MoveTo((Utils.getPointInFront(bot.Location, randDir)));
                                     return;
                                 }
@@ -62,8 +57,31 @@ namespace AASMAHoshimi.Examples
                             }
 
                         }
+                        else if (sqrDistanceToBot < sqrRobotScanDistance)
+                        {
+                            int x = this.Location.X;
+                            int y = this.Location.Y;
+
+                            if (this.Location.X < bot.Location.X)
+                                x++;
+                            else
+                                x--;
+
+                            if (this.Location.Y < bot.Location.Y)
+                                y++;
+                            else
+                                y--;
+
+                            Point dest = new Point(x, y);
+                            if (getAASMAFramework().isMovablePoint(dest))
+                            {
+                                this.MoveTo(dest);
+                                Debug.WriteLine(this.InternalName + " Moving towards Needle");
+                                return;
+                            }
+                        }
                     }
-            }
+            } // end of search for needle
 
             if (frontClear())
                 this.MoveForward();
@@ -71,59 +89,6 @@ namespace AASMAHoshimi.Examples
                 this.RandomTurn();
         }
 
-
-        private bool AttackEnemy(Point p)
-        {
-           // bool attack = true;
-            //Debug.WriteLine(this.NanoBotInfo.InternalName + " AtackEnemy");
-            if (Utils.SquareDistance(this.Location, p) < (this.DefenseDistance * this.DefenseDistance))
-            {
-             /*   int my = p.Y - this.Location.Y;
-                int mx = p.X - this.Location.X;
-                int m;
-
-                if (mx == 0 || my == 0)
-                    m = 0;
-                else
-                    m = (p.Y - this.Location.Y)/(p.X - this.Location.X);
-
-                int b = this.Location.Y - m * this.Location.X;
-
-                
-
-                if (m == 1 || m == -1)
-                {
-                    int minY = Math.Min(this.Location.Y, p.Y);
-                    int maxY = Math.Max(this.Location.Y, p.Y);
-                    for (int i = minY + 1; i < maxY; i++)
-                        if (!this.getAASMAFramework().isMovablePoint(new Point((i - b)/m, i)))
-                        {
-                            attack = false;
-                            break;
-                        }
-                }
-                else
-                {
-                    int minX = Math.Min(this.Location.X, p.X);
-                    int maxX = Math.Max(this.Location.X, p.X);
-                    for (int i = minX + 1; i < maxX; i++)
-                        if (!this.getAASMAFramework().isMovablePoint(new Point(i, m * i + b)))
-                        {
-                            attack = false;
-                            break;
-                        }
-                }
-
-                if (attack)
-                {*/
-                this.DefendTo(p, 2);
-                return true;
-                //}
-            }
-
-            return false;
-            
-        }
 
         public override void receiveMessage(AASMAMessage msg)
         {

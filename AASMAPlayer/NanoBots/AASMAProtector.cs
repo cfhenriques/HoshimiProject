@@ -4,6 +4,7 @@ using System.Text;
 using System.Drawing;
 using PH.Common;
 using PH.Map;
+using System.Diagnostics;
 
 namespace AASMAHoshimi
 {
@@ -30,6 +31,42 @@ namespace AASMAHoshimi
         {
             Point p = Utils.getPointInFront(this.Location, this._direction);
             return Utils.isPointOK(PlayerOwner.Tissue, p.X, p.Y);
+        }
+
+        public bool canAttack()
+        {
+            int sqrDefenceDistance, sqrDistanceToEnemy;
+
+            foreach (Point enemy in getAASMAFramework().visiblePierres(this))
+            {
+                sqrDefenceDistance = this.DefenseDistance * this.DefenseDistance;
+                sqrDistanceToEnemy = Utils.SquareDistance(this.Location, enemy);
+
+                if (sqrDistanceToEnemy <= sqrDefenceDistance)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public void AttackEnemy()
+        {
+            int sqrDefenceDistance, sqrDistanceToEnemy;
+
+
+            foreach (Point enemyPosition in getAASMAFramework().visiblePierres(this))
+            {
+                sqrDefenceDistance = this.DefenseDistance * this.DefenseDistance;
+                sqrDistanceToEnemy = Utils.SquareDistance(this.Location, enemyPosition);
+
+                if (sqrDistanceToEnemy < sqrDefenceDistance)
+                {
+                    Debug.WriteLine(this.InternalName + " Attacking Enemy!!!!!!!!");
+                    this.DefendTo(enemyPosition, 2);
+                    return;
+                }
+            }
+
         }
 
         public void MoveForward()
