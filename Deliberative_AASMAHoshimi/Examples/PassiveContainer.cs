@@ -12,65 +12,231 @@ namespace Deliberative_AASMAHoshimi.Examples
     [Characteristics(ContainerCapacity = 50, CollectTransfertSpeed = 5, Scan = 0, MaxDamage = 0, DefenseDistance = 0, Constitution = 15)]
     class PassiveContainer : AASMAContainer
     {
-        public override void DoActions()
+        
+        enum Desire
         {
-            //stock is the ammount of azn the collector already has. If full, there is no point in collecting more azn.
-            //the overAZN method checks if the received nanobot is over an AZN point
-            if (this.State == NanoBotState.WaitingOrders)
+            EMPTY,
+            SEARCH_AZNPOINT,
+            GOTO_AZN,
+            SEARCH_NEEDLE,
+            GOTO_NEEDLE
+        };
+
+        enum Instructions
+        {
+            MOVE_FORWARD,
+            RANDOM_TURN,
+            MOVE_TO,
+            COLLECT,
+            DROP
+        }
+
+        struct Intention
+        {
+            private Desire _desire;
+            private Point _dest;
+
+            public Intention(Desire d, Point p)
             {
-                if (Stock < ContainerCapacity && this.getAASMAFramework().overAZN(this))
-                {
-                    this.collectAZN();
-                }
-                else if (Stock > 0 && this.getAASMAFramework().overEmptyNeedle(this))
-                {
-                    this.transferAZN();
-                }
-                else
-                    Move();
+                _desire = d;
+                _dest = p;
+            }
+
+            public Desire getDesire()
+            {
+                return _desire;
+            }
+
+            public Point getDest()
+            {
+                return _dest;
+            }
+        };
+
+        struct Instruction
+        {
+            private Instructions instruction;
+            private Point dest;
+
+            public Instruction(Instructions instr, Point p)
+            {
+                instruction = instr;
+                dest = p;
+            }
+
+            public Instruction(Instructions instr)
+            {
+                instruction = instr;
+                dest = Point.Empty;
+            }
+
+            public Instructions getInstruction()
+            {
+                return instruction;
+            }
+
+            public Point getDest()
+            {
+                return dest;
             }
         }
 
-        private void Move()
+        List<Instruction> currentPlan = new List<Instruction>();
+        Intention currentIntention = new Intention(Desire.EMPTY, Point.Empty);
+
+
+
+        public override void DoActions()
         {
-            int robotScanDistance = this.Scan + PH.Common.Utils.ScanLength;
-            int sqrRobotScanDistance = robotScanDistance * robotScanDistance;
-
-            int mindist = Int16.MaxValue;
-            int dist ;
-
-            Point destPoint = Point.Empty;
-
-            if(this.Stock.Equals(this.ContainerCapacity))
-                foreach (Point needle in getAASMAFramework().visibleEmptyNeedles(this))
+            if (this.State == NanoBotState.WaitingOrders)
+            {
+                if (currentPlan.Count != 0 || !Succeeded(currentIntention))
                 {
-                    dist = Utils.SquareDistance(this.Location, needle);
-                    if (dist < sqrRobotScanDistance)
-                    {
-                        mindist = dist;
-                        destPoint = needle;
-                    }
+                    Execute(currentPlan);
+                    UpdateBeliefs();
                 }
-            else
-                foreach (Point aznPoint in getAASMAFramework().visibleAznPoints(this))
+                else
                 {
-                    dist = Utils.SquareDistance(this.Location, aznPoint);
-                    if( dist < sqrRobotScanDistance)
-                    {
-                        mindist = dist;
-                        destPoint = aznPoint;
-                    }
+                    UpdateBeliefs();
+
+                    Desire d = Options();
+                    currentIntention = Filter(d);
+                    currentPlan = Plan(currentIntention);
                 }
+            }
+        }
+
+        private void UpdateBeliefs()
+        {
+
+        }
+
+        private Desire Options()
+        {
+            if (this.Stock.Equals(this.ContainerCapacity)) // full
+            {
+                foreach (Point p in getAASMAFramework().visibleEmptyNeedles(this))
+                    return Desire.GOTO_NEEDLE;
+
+                return Desire.SEARCH_NEEDLE;
+            }
+            else //empty
+            {
+                foreach (Point p in getAASMAFramework().visibleAznPoints(this))
+                    return Desire.GOTO_AZN;
+
+                return Desire.SEARCH_AZNPOINT;
+            }
+
+        }
+
+        private Intention Filter(Desire desire)
+        {
+            switch(desire)
+            {
+                case Desire.SEARCH_AZNPOINT:
+                case Desire.SEARCH_NEEDLE:
+                    return new Intention(desire, Point.Empty);
+                case Desire.GOTO_AZN:
+                    foreach (Point p in getAASMAFramework().visibleAznPoints(this))
+                        return new Intention(desire, p); 
+
+                    Debug.WriteLine(this.InternalName + " tried to go to an empty azn point");
+                    return new Intention(Desire.EMPTY, Point.Empty);
+                case Desire.GOTO_NEEDLE:
+                    foreach (Point p in getAASMAFramework().visibleEmptyNeedles(this))
+                        return new Intention(desire, p); 
+
+                    Debug.WriteLine(this.InternalName + " tried to go to an inexistent needle");
+                    return new Intention(Desire.EMPTY, Point.Empty);
+
+                default:
+                    return new Intention(Desire.EMPTY, Point.Empty);
+            }
+        }
+
+        private List<Instruction> Plan(Intention intention)
+        {
+            List<Instruction> myplan = new List<Instruction>();
+
+            switch (intention.getDesire())
+            {
+                case Desire.SEARCH_AZNPOINT:
+                case Desire.SEARCH_NEEDLE:
+                    if (frontClear())
+                        myplan.Add(new Instruction(Instructions.MOVE_FORWARD));
+                    else
+                        myplan.Add(new Instruction(Instructions.RANDOM_TURN));
+                    break;
+                case Desire.GOTO_AZN:
+                    myplan.Add(new Instruction(Instructions.MOVE_TO, intention.getDest()));
+                    myplan.Add(new Instruction(Instructions.COLLECT));
+                    break;
+                case Desire.GOTO_NEEDLE:
+                    myplan.Add(new Instruction(Instructions.MOVE_TO, intention.getDest()));
+                    myplan.Add(new Instruction(Instructions.DROP));
+                    break;
+                default:
+                    break;
+            }
+
+            return myplan;
+        }
+
+        private void Execute(List<Instruction> plan)
+        {
+            Instruction i = new Instruction();
+
+            if (plan.Count > 0)
+            {
+                i = plan[0];
+                plan.RemoveAt(0);
+            }
+            else if (currentIntention.getDesire() == Desire.GOTO_AZN && this.getAASMAFramework().overAZN(this))
+                i = new Instruction(Instructions.COLLECT);
+            else if (currentIntention.getDesire() == Desire.GOTO_NEEDLE && this.getAASMAFramework().overEmptyNeedle(this))
+                i = new Instruction(Instructions.DROP);
                 
 
-            if (!destPoint.IsEmpty && this.getAASMAFramework().isMovablePoint(destPoint)) {
-                System.Diagnostics.Debug.WriteLine("Container Capacity: " + this.NanoBotInfo.Stock);
-                this.MoveTo(destPoint);
+
+            switch (i.getInstruction())
+            {
+                case Instructions.MOVE_TO:
+                    this.MoveTo(i.getDest());
+                    break;
+                case Instructions.MOVE_FORWARD:
+                    MoveForward();
+                    break;
+                case Instructions.RANDOM_TURN:
+                    RandomTurn();
+                    break;
+                case Instructions.COLLECT:
+                    if (this.getAASMAFramework().overAZN(this))
+                        this.collectAZN();
+                    else
+                        Debug.WriteLine(this.InternalName + " tried to collect AZN when far from AZN Point");
+                    break;
+                case Instructions.DROP:
+                    if (this.getAASMAFramework().overEmptyNeedle(this))
+                        this.transferAZN();
+                    else
+                        Debug.WriteLine(this.InternalName + " tried to collect AZN when far from Needle");
+                    break;
+                default:
+                    break;
             }
-            else if (frontClear())
-                this.MoveForward();
-            else
-                this.RandomTurn();
+
+        }
+
+        private bool Succeeded(Intention i)
+        {
+            if (i.getDesire() == Desire.GOTO_AZN && this.getAASMAFramework().overAZN(this) && this.Stock < this.ContainerCapacity)
+                return false;
+            else if (i.getDesire() == Desire.GOTO_NEEDLE && this.getAASMAFramework().overEmptyNeedle(this) && this.Stock != 0)
+                return false;
+
+
+            return true;
         }
 
         public override void receiveMessage(AASMAMessage msg)

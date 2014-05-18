@@ -84,18 +84,21 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         public override void DoActions()
         {
-            if(currentPlan.Count != 0)
+            if (this.State == NanoBotState.WaitingOrders)
             {
-                Execute(currentPlan);
-                UpdateBeliefs();
-            }
-            else
-            {
-                UpdateBeliefs();
-                
-                Desire d = Options();
-                Intention i = Filter(d);
-                currentPlan = Plan(i);
+                if (currentPlan.Count != 0)
+                {
+                    Execute(currentPlan);
+                    UpdateBeliefs();
+                }
+                else
+                {
+                    UpdateBeliefs();
+
+                    Desire d = Options();
+                    Intention i = Filter(d);
+                    currentPlan = Plan(i);
+                }
             }
         }
 
@@ -204,25 +207,6 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         }
 
-        /*
-        public void Move(Point p)
-        { 
-            if(p.IsEmpty)
-            {
-                if (frontClear())
-                    this.MoveForward();
-                else
-                    this.RandomTurn();
-            }
-            else 
-            {
-                this.MoveTo(p);
-            }
-
-
-        }
-
-        */
 
         public override void receiveMessage(AASMAMessage msg)
         {

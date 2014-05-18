@@ -37,10 +37,10 @@ namespace Deliberative_AASMAHoshimi.Examples
                 //        this._nanoAI.Build(typeof(NeedleProtector), "NP" + this._protectorNumber++);
                     
                 } */
-               /* else if (getAASMAFramework().containersAlive() < 2)
-                    this._nanoAI.Build(typeof(PassiveContainer), "C" + this._containerNumber++); */
-                else if (getAASMAFramework().explorersAlive() < 2)
-                    this._nanoAI.Build(typeof(ForwardExplorer), "E" + this._explorerNumber++);          
+                else if (getAASMAFramework().containersAlive() < 10)
+                    this._nanoAI.Build(typeof(PassiveContainer), "C" + this._containerNumber++); 
+               /* else if (getAASMAFramework().explorersAlive() < 2)
+                    this._nanoAI.Build(typeof(ForwardExplorer), "E" + this._explorerNumber++);   */       
                     
                 else
                     Move();
