@@ -23,16 +23,18 @@ namespace AASMAHoshimi.Examples
                 if (getAASMAFramework().overHoshimiPoint(this._nanoAI) && 
                     !getAASMAFramework().overNeedle(this._nanoAI))
                     this._nanoAI.Build(typeof(PassiveNeedle), "N" + this._needleNumber++);
-                else if (getAASMAFramework().protectorsAlive() < 7)
+                else if (getAASMAFramework().protectorsAlive() < 2)
                 {
-                    int rand = Utils.randomValue(3);
+                //    int rand = Utils.randomValue(4);
 
-                    if(rand == 0)
+                //    if(rand == 0)
                         this._nanoAI.Build(typeof(RandomProtector), "RP" + this._protectorNumber++);
-                    else if(rand == 1)
-                        this._nanoAI.Build(typeof(AIProtector), "AIP" + this._protectorNumber++);
-                    else
-                    this._nanoAI.Build(typeof(ContainerProtector), "CP" + this._protectorNumber++);
+                //    else if(rand == 1)
+                //        this._nanoAI.Build(typeof(AIProtector), "AIP" + this._protectorNumber++);
+                //    else if (rand == 2)
+                //        this._nanoAI.Build(typeof(ContainerProtector), "CP" + this._protectorNumber++);
+                //    else
+                //        this._nanoAI.Build(typeof(NeedleProtector), "NP" + this._protectorNumber++);
                     
                 }
                 else if (getAASMAFramework().containersAlive() < 2)

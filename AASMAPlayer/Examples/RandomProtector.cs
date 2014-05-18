@@ -18,7 +18,7 @@ namespace AASMAHoshimi.Examples
 
             if (this.State == NanoBotState.WaitingOrders)
             {
-                if(hasVisibleEnemies())
+                if(canAttack())
                     AttackVisibleEnemies();
                 else
                     Move();
@@ -28,15 +28,63 @@ namespace AASMAHoshimi.Examples
 
         public void Move()
         {
+            int sqrDefenceDistance, sqrDistanceToEnemy;
+
+            foreach (Point enemy in getAASMAFramework().visiblePierres(this))
+            {
+                sqrDefenceDistance = this.DefenseDistance * this.DefenseDistance;
+                sqrDistanceToEnemy = Utils.SquareDistance(this.Location, enemy);
+
+                if (sqrDistanceToEnemy > sqrDefenceDistance)
+                {
+                    int x = this.Location.X;
+                    int y = this.Location.Y;
+
+                    if (this.Location.X < enemy.X)
+                        x++;
+                    else
+                        x--;
+
+                    if (this.Location.Y < enemy.Y)
+                        y++;
+                    else
+                        y--;
+
+                    Point dest = new Point(x, y);
+                    if (getAASMAFramework().isMovablePoint(dest))
+                    {
+                        this.MoveTo(dest);
+                        Debug.WriteLine(this.InternalName + " Moving towards enemy");
+                        return;
+                    }
+                }
+
+
+            }
+
             if (frontClear())
                 this.MoveForward();
             else
                 this.RandomTurn();
         }
 
-        private bool hasVisibleEnemies()
+        private bool canAttack()
         {
-            return getAASMAFramework().visiblePierres(this).Count > 0; 
+
+            int sqrDefenceDistance, sqrDistanceToEnemy;
+
+            foreach (Point enemy in getAASMAFramework().visiblePierres(this))
+            {
+                sqrDefenceDistance = this.DefenseDistance * this.DefenseDistance;
+                sqrDistanceToEnemy = Utils.SquareDistance(this.Location, enemy);
+
+                if (sqrDistanceToEnemy <= sqrDefenceDistance) 
+                    return true;
+            }
+                
+
+            return false;
+ 
         }
 
         public void AttackVisibleEnemies()
@@ -54,7 +102,7 @@ namespace AASMAHoshimi.Examples
                     Debug.WriteLine(this.InternalName + " Attacking Enemy!!!!!!!!");
                     //the defendTo commands fires to the specified position for a number of specified turns. 1 is the recommended number of turns.
                     this.DefendTo(enemyPosition, 2);
-                }
+                }   /*
                 else
                 {
                     int x = this.Location.X;
@@ -82,7 +130,7 @@ namespace AASMAHoshimi.Examples
 
                     }
 
-                }
+                } */
             }
         }
 

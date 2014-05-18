@@ -29,7 +29,7 @@ namespace AASMAHoshimi.Examples
                 sqrDistanceToEnemy = Utils.SquareDistance(this.Location, enemyPosition);
 
                 if (sqrDistanceToEnemy <= sqrDefenceDistance)
-                    this.DefendTo(enemyPosition, 1);
+                    this.DefendTo(enemyPosition, 2);
             }
         }
 

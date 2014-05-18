@@ -71,51 +71,11 @@ namespace AASMAHoshimi.Examples
 
         private bool AttackEnemy(Point p)
         {
-           // bool attack = true;
             //Debug.WriteLine(this.NanoBotInfo.InternalName + " AtackEnemy");
             if (Utils.SquareDistance(this.Location, p) < (this.DefenseDistance * this.DefenseDistance))
             {
-             /*   int my = p.Y - this.Location.Y;
-                int mx = p.X - this.Location.X;
-                int m;
-
-                if (mx == 0 || my == 0)
-                    m = 0;
-                else
-                    m = (p.Y - this.Location.Y)/(p.X - this.Location.X);
-
-                int b = this.Location.Y - m * this.Location.X;
-
-                
-
-                if (m == 1 || m == -1)
-                {
-                    int minY = Math.Min(this.Location.Y, p.Y);
-                    int maxY = Math.Max(this.Location.Y, p.Y);
-                    for (int i = minY + 1; i < maxY; i++)
-                        if (!this.getAASMAFramework().isMovablePoint(new Point((i - b)/m, i)))
-                        {
-                            attack = false;
-                            break;
-                        }
-                }
-                else
-                {
-                    int minX = Math.Min(this.Location.X, p.X);
-                    int maxX = Math.Max(this.Location.X, p.X);
-                    for (int i = minX + 1; i < maxX; i++)
-                        if (!this.getAASMAFramework().isMovablePoint(new Point(i, m * i + b)))
-                        {
-                            attack = false;
-                            break;
-                        }
-                }
-
-                if (attack)
-                {*/
                 this.DefendTo(p, 2);
                 return true;
-                //}
             }
 
             return false;
