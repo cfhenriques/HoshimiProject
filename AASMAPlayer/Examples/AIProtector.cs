@@ -21,16 +21,37 @@ namespace AASMAHoshimi.Examples
             //Debug.WriteLine(this.NanoBotInfo.InternalName + " DoActions");
             if(this.State == NanoBotState.WaitingOrders)
             {
-                List<Point> enemies = this.getAASMAFramework().visiblePierres(this);
+            /*    List<Point> enemies = this.getAASMAFramework().visiblePierres(this);
                 if (enemies.Count > 0) {
                     foreach(Point p in enemies) {
                         if (AttackEnemy(p))
                             return;
                     }
                 }
-                
-                Move();
+             */
+                if (canAttack())
+                    AttackEnemy();
+                else
+                    Move();
             }
+        }
+
+        private bool canAttack()
+        {
+
+            int sqrDefenceDistance, sqrDistanceToEnemy;
+
+            foreach (Point enemy in getAASMAFramework().visiblePierres(this))
+            {
+                sqrDefenceDistance = this.DefenseDistance * this.DefenseDistance;
+                sqrDistanceToEnemy = Utils.SquareDistance(this.Location, enemy);
+
+                if (sqrDistanceToEnemy <= sqrDefenceDistance)
+                    return true;
+            }
+
+            return false;
+
         }
 
         private void Move()
@@ -43,7 +64,8 @@ namespace AASMAHoshimi.Examples
                 Point _AIlocation = this.PlayerOwner.AI.Location;
                 int sqrDistanceToAI = Utils.SquareDistance(this.Location, _AIlocation);
 
-                if (sqrDistanceToAI < sqrRobotScanDistance)
+                if ( sqrDistanceToAI < sqrRobotScanDistance &&
+                     sqrDistanceToAI <= 18 ) // 8 = 2^2 * 2^2;        // if he's near AI
                 {
                     Utils.direction randDir;
 
@@ -60,7 +82,30 @@ namespace AASMAHoshimi.Examples
                     }
 
                 }
-            }
+                else if (sqrDistanceToAI < sqrRobotScanDistance)
+                {
+                    int x = this.Location.X;
+                    int y = this.Location.Y;
+
+                    if (this.Location.X < _AIlocation.X)
+                        x++;
+                    else
+                        x--;
+
+                    if (this.Location.Y < _AIlocation.Y)
+                        y++;
+                    else
+                        y--;
+
+                    Point dest = new Point(x,y);
+                    if (getAASMAFramework().isMovablePoint(dest))
+                    {
+                        this.MoveTo(dest);
+                        Debug.WriteLine(this.InternalName + " Moving towards AI");
+                        return;
+                    }
+                }  
+            }   
 
             if (frontClear())
                 this.MoveForward();
@@ -69,16 +114,22 @@ namespace AASMAHoshimi.Examples
         }
 
 
-        private bool AttackEnemy(Point p)
+        private void AttackEnemy()
         {
-            //Debug.WriteLine(this.NanoBotInfo.InternalName + " AtackEnemy");
-            if (Utils.SquareDistance(this.Location, p) < (this.DefenseDistance * this.DefenseDistance))
-            {
-                this.DefendTo(p, 2);
-                return true;
-            }
+            int sqrDefenceDistance, sqrDistanceToEnemy;
 
-            return false;
+
+            foreach (Point enemyPosition in getAASMAFramework().visiblePierres(this))
+            {
+                sqrDefenceDistance = this.DefenseDistance * this.DefenseDistance;
+                sqrDistanceToEnemy = Utils.SquareDistance(this.Location, enemyPosition);
+
+                if (sqrDistanceToEnemy < sqrDefenceDistance)
+                {
+                    this.DefendTo(enemyPosition, 2);
+                    return;
+                }
+            }
             
         }
 
