@@ -8,8 +8,8 @@
     <ProjectGuid>{C1995BDF-2AE4-4F2E-B8DE-C924473466A0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AASMAHoshimi</RootNamespace>
-    <AssemblyName>AASMAHoshimi</AssemblyName>
+    <RootNamespace>Reactive_AASMAHoshimi</RootNamespace>
+    <AssemblyName>Reactive_AASMAHoshimi</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
