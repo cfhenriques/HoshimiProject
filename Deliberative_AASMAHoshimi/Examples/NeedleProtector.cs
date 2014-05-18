@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Diagnostics;
 using PH.Common;
 
-namespace Reactive_AASMAHoshimi.Examples
+namespace Deliberative_AASMAHoshimi.Examples
 {
     [Characteristics(
         ContainerCapacity = 0, 
@@ -14,7 +14,7 @@ namespace Reactive_AASMAHoshimi.Examples
         MaxDamage = 5, 
         DefenseDistance = 12, 
         Constitution = 28)]
-    public class ContainerProtector : AASMAProtector
+    public class NeedleProtector : AASMAProtector
     {
         public override void DoActions()
         {
@@ -23,7 +23,7 @@ namespace Reactive_AASMAHoshimi.Examples
             {
                 if (canAttack())
                     AttackEnemy();
-                else 
+                else
                     Move();
             }
         }
@@ -33,14 +33,14 @@ namespace Reactive_AASMAHoshimi.Examples
             int robotScanDistance = this.Scan + PH.Common.Utils.ScanLength;
             int sqrRobotScanDistance = robotScanDistance * robotScanDistance;
 
-            { // searching for Container
+            { // searching for Protector
 
                 foreach(NanoBot bot in this.PlayerOwner.NanoBots)
-                    if(bot is PassiveContainer)
+                    if(bot is PassiveNeedle)
                     {
                         int sqrDistanceToBot = Utils.SquareDistance(this.Location, bot.Location);
 
-                        if (sqrDistanceToBot < sqrRobotScanDistance && sqrDistanceToBot <= 18)
+                        if (sqrDistanceToBot < sqrRobotScanDistance/* && sqrDistanceToBot < 18*/)
                         {
                             Utils.direction randDir;
                             for (int i = 0; i < 4; i++)
@@ -49,7 +49,7 @@ namespace Reactive_AASMAHoshimi.Examples
 
                                 if (getAASMAFramework().isMovablePoint(Utils.getPointInFront(bot.Location, randDir)))
                                 {
-                                //    Debug.WriteLine(this.NanoBotInfo.InternalName + " Moving towards Container");
+                                    Debug.WriteLine(this.NanoBotInfo.InternalName + " Moving towards Needle");
                                     this.MoveTo((Utils.getPointInFront(bot.Location, randDir)));
                                     return;
                                 }
@@ -57,7 +57,7 @@ namespace Reactive_AASMAHoshimi.Examples
                             }
 
                         }
-                        else if(sqrDistanceToBot < sqrRobotScanDistance)
+                        else if (sqrDistanceToBot < sqrRobotScanDistance)
                         {
                             int x = this.Location.X;
                             int y = this.Location.Y;
@@ -76,18 +76,19 @@ namespace Reactive_AASMAHoshimi.Examples
                             if (getAASMAFramework().isMovablePoint(dest))
                             {
                                 this.MoveTo(dest);
-                                Debug.WriteLine(this.InternalName + " Moving towards Container");
+                                Debug.WriteLine(this.InternalName + " Moving towards Needle");
                                 return;
                             }
-                        } 
+                        }
                     }
-            }
+            } // end of search for needle
 
             if (frontClear())
                 this.MoveForward();
             else
                 this.RandomTurn();
         }
+
 
         public override void receiveMessage(AASMAMessage msg)
         {

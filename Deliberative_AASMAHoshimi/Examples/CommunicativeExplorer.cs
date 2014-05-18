@@ -4,7 +4,7 @@ using System.Text;
 using System.Drawing;
 using PH.Common;
 
-namespace Reactive_AASMAHoshimi.Examples
+namespace Deliberative_AASMAHoshimi.Examples
 {
     //this is an explorer that does not move much (not much of a good explorer) but is a mouthfull
     [Characteristics(ContainerCapacity = 0, CollectTransfertSpeed = 0, Scan = 30, MaxDamage = 0, DefenseDistance = 0, Constitution = 10)]

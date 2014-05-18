@@ -6,7 +6,7 @@ using PH.Common;
 using PH.Map;
 using System.Diagnostics;
 
-namespace Reactive_AASMAHoshimi
+namespace Deliberative_AASMAHoshimi
 {
     [Characteristics(ContainerCapacity = 0, CollectTransfertSpeed = 0, Scan = 5, MaxDamage = 5, DefenseDistance = 12, Constitution = 28)]
     public abstract class AASMAProtector : PH.Common.NanoCollector, IActionable, ICommunicable

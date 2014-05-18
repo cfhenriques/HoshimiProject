@@ -5,9 +5,9 @@ using System.Drawing;
 using System.Diagnostics;
 using PH.Common;
 using PH.Map;
-using Reactive_AASMAHoshimi.Examples;
+using Deliberative_AASMAHoshimi.Examples;
 
-namespace Reactive_AASMAHoshimi
+namespace Deliberative_AASMAHoshimi
 {
     public class AASMAPlayer : PH.Common.Player
     {

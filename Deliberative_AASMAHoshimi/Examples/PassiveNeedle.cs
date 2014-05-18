@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Text;
 using PH.Common;
 
-namespace Reactive_AASMAHoshimi.Examples
+namespace Deliberative_AASMAHoshimi.Examples
 {
     //a needle can't do much since it cannot move. However, it does have vision (so it can see enemies and other stuff),
     //can attack Pierre Bots and can send messages. 

@@ -5,7 +5,7 @@ using System.Drawing;
 using PH.Common;
 using PH.Map;
 
-namespace Reactive_AASMAHoshimi
+namespace Deliberative_AASMAHoshimi
 {
     [Characteristics(ContainerCapacity = 100, CollectTransfertSpeed = 0, Scan = 10, MaxDamage = 5, DefenseDistance = 10, Constitution = 25)]
     public abstract class AASMANeedle : PH.Common.NanoNeedle, IActionable, ICommunicable

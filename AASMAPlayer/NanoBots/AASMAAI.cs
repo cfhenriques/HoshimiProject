@@ -5,7 +5,7 @@ using System.Drawing;
 using PH.Common;
 using PH.Map;
 
-namespace AASMAHoshimi
+namespace Reactive_AASMAHoshimi
 {
     public abstract class AASMAAI : IActionable, ICommunicable
     {

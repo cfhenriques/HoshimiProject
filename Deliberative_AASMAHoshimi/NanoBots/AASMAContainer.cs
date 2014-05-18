@@ -5,21 +5,22 @@ using System.Drawing;
 using PH.Common;
 using PH.Map;
 
-namespace Reactive_AASMAHoshimi
+namespace Deliberative_AASMAHoshimi
 {
-    [Characteristics(ContainerCapacity = 0, CollectTransfertSpeed = 0, Scan = 30, MaxDamage = 0, DefenseDistance = 0, Constitution = 10)]
-    public abstract class AASMAExplorer : PH.Common.NanoExplorer, IActionable, ICommunicable
+    [Characteristics(ContainerCapacity = 50, CollectTransfertSpeed = 5, Scan = 0, MaxDamage = 0, DefenseDistance = 0, Constitution = 15)]
+    public abstract class AASMAContainer : PH.Common.NanoContainer, IActionable, ICommunicable
     {
         private Utils.direction _direction;
 
-        public AASMAExplorer()
-        {
+        public AASMAContainer(){
+
             _direction = Utils.RandomDirection();
         }
 
+        public abstract void DoActions();
+
         public abstract void receiveMessage(AASMAMessage msg);
 
-        public abstract void DoActions();
 
         public AASMAPlayer getAASMAFramework()
         {
@@ -28,7 +29,7 @@ namespace Reactive_AASMAHoshimi
 
         public Boolean frontClear()
         {
-            Point p = Utils.getPointInFront(this.Location, this._direction);
+            Point p = Utils.getPointInFront(this.Location,this._direction);
             return Utils.isPointOK(PlayerOwner.Tissue, p.X, p.Y);
         }
 
@@ -60,5 +61,14 @@ namespace Reactive_AASMAHoshimi
             }
         }
 
+        public bool collectAZN()
+        {
+            return base.CollectFrom(this.Location, 1);
+        }
+
+        public bool transferAZN()
+        {
+            return base.TransferTo(this.Location, 1);
+        }
     }
 }

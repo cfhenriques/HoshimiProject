@@ -5,7 +5,7 @@ using System.Drawing;
 using PH.Common;
 using System.Diagnostics;
 
-namespace Reactive_AASMAHoshimi.Examples
+namespace Deliberative_AASMAHoshimi.Examples
 {
     //this protector does not move (u should write the code for it), however he will shoot any incoming pierre's that he sees
     //however, it is frequent that pierre's neurocontrollers kill the protector before he sees it
@@ -61,7 +61,7 @@ namespace Reactive_AASMAHoshimi.Examples
 
 
             }
-           
+            
             if (frontClear())
                 this.MoveForward();
             else

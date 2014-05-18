@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Text;
 using PH.Common;
 
-namespace Reactive_AASMAHoshimi.Examples
+namespace Deliberative_AASMAHoshimi.Examples
 {
     //this explorer always moves forward and turns when it cannot move. Uses the basic movement functions (turn, movefront)
     [Characteristics(ContainerCapacity = 0, CollectTransfertSpeed = 0, Scan = 30, MaxDamage = 0, DefenseDistance = 0, Constitution = 10)]

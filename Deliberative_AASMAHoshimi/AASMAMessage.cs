@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Reactive_AASMAHoshimi
+namespace Deliberative_AASMAHoshimi
 {
     public class AASMAMessage
     {

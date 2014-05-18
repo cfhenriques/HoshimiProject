@@ -5,7 +5,7 @@ using System.Drawing;
 using PH.Common;
 using PH.Map;
 
-namespace Reactive_AASMAHoshimi
+namespace Deliberative_AASMAHoshimi
 {
     [Characteristics(ContainerCapacity = 0, CollectTransfertSpeed = 0, Scan = 30, MaxDamage = 0, DefenseDistance = 0, Constitution = 10)]
     public abstract class AASMAExplorer : PH.Common.NanoExplorer, IActionable, ICommunicable

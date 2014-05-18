@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Diagnostics;
 using PH.Common;
 
-namespace AASMAHoshimi.Examples
+namespace Reactive_AASMAHoshimi.Examples
 {
     [Characteristics(
         ContainerCapacity = 0, 
@@ -40,7 +40,7 @@ namespace AASMAHoshimi.Examples
                     {
                         int sqrDistanceToBot = Utils.SquareDistance(this.Location, bot.Location);
 
-                        if (sqrDistanceToBot < sqrRobotScanDistance/* && sqrDistanceToBot < 18*/)
+                        if (sqrDistanceToBot < sqrRobotScanDistance && sqrDistanceToBot < 18)
                         {
                             Utils.direction randDir;
                             for (int i = 0; i < 4; i++)

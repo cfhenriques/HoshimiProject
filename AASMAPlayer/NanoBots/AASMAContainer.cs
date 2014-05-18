@@ -5,7 +5,7 @@ using System.Drawing;
 using PH.Common;
 using PH.Map;
 
-namespace AASMAHoshimi
+namespace Reactive_AASMAHoshimi
 {
     [Characteristics(ContainerCapacity = 50, CollectTransfertSpeed = 5, Scan = 0, MaxDamage = 0, DefenseDistance = 0, Constitution = 15)]
     public abstract class AASMAContainer : PH.Common.NanoContainer, IActionable, ICommunicable

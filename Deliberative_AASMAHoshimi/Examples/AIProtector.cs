@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Diagnostics;
 using PH.Common;
 
-namespace Reactive_AASMAHoshimi.Examples
+namespace Deliberative_AASMAHoshimi.Examples
 {
     [Characteristics(
         ContainerCapacity = 0, 

@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Diagnostics;
 using PH.Common;
 
-namespace Reactive_AASMAHoshimi.Examples
+namespace Deliberative_AASMAHoshimi.Examples
 {
     //this is an example of a stupid collector that does not move, however if he is under an AZN point he will try to collect
     //something
