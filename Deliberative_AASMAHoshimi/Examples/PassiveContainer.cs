@@ -24,8 +24,7 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         enum Instructions
         {
-            MOVE_FORWARD,
-            RANDOM_TURN,
+            MOVE,
             MOVE_TO,
             COLLECT,
             DROP
@@ -163,10 +162,7 @@ namespace Deliberative_AASMAHoshimi.Examples
             {
                 case Desire.SEARCH_AZNPOINT:
                 case Desire.SEARCH_NEEDLE:
-                    if (frontClear())
-                        myplan.Add(new Instruction(Instructions.MOVE_FORWARD));
-                    else
-                        myplan.Add(new Instruction(Instructions.RANDOM_TURN));
+                    myplan.Add(new Instruction(Instructions.MOVE));
                     break;
                 case Desire.GOTO_AZN:
                     myplan.Add(new Instruction(Instructions.MOVE_TO, intention.getDest()));
@@ -204,11 +200,11 @@ namespace Deliberative_AASMAHoshimi.Examples
                 case Instructions.MOVE_TO:
                     this.MoveTo(i.getDest());
                     break;
-                case Instructions.MOVE_FORWARD:
-                    MoveForward();
-                    break;
-                case Instructions.RANDOM_TURN:
-                    RandomTurn();
+                case Instructions.MOVE:
+                    if (frontClear())
+                        MoveForward();
+                    else
+                        RandomTurn();
                     break;
                 case Instructions.COLLECT:
                     if (this.getAASMAFramework().overAZN(this))
