@@ -15,9 +15,12 @@ namespace Deliberative_AASMAHoshimi.Examples
     {
 
         List<Point> reachedNavPoints = new List<Point>();
+        List<Point> navPointToReach = new List<Point>();
         List<Instruction> currentPlan = new List<Instruction>();
 
         List<Point> hoshimi_points = new List<Point>();
+
+        List<AASMAMessage> inbox = new List<AASMAMessage>();
 
         enum Desire
         {
@@ -105,16 +108,30 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private void UpdateBeliefs()
         {
-            foreach (Point p in reachedNavPoints)
-                Debug.WriteLine(this.InternalName + "     X: " + p.X + "   Y: " + p.Y);
-            
-            foreach (Point p in this.getAASMAFramework().visibleNavigationPoints(this))
-                if (p.X == this.Location.X && p.Y == this.Location.Y && !reachedNavPoints.Contains(p))
-                {
-                //    Debug.WriteLine(this.InternalName + " adding point x: " + this.Location.X + "   y: " + this.Location.Y);
-                    reachedNavPoints.Add(p);
-                }
 
+            foreach (Point p in this.getAASMAFramework().visibleNavigationPoints(this))
+            {
+                if (p.X == this.Location.X && p.Y == this.Location.Y && !reachedNavPoints.Contains(p))
+                    reachedNavPoints.Add(p);
+                
+                if (!navPointToReach.Contains(p) && !reachedNavPoints.Contains(p))
+                    navPointToReach.Add(p);
+            }
+
+
+            // inbox
+            foreach(AASMAMessage msg in inbox)
+            {
+                if(msg.Content.Equals("E_$ NAVIGATION POINT REACHED"))
+                {
+                    Point p = (Point)msg.Tag;
+                    if (!reachedNavPoints.Contains(p))
+                        reachedNavPoints.Add(p);
+
+                    if (navPointToReach.Contains(p))
+                        navPointToReach.Remove(p);
+                }
+            }
 
             // outbox
             foreach(Point hoshimi in this.getAASMAFramework().visibleHoshimies(this))
@@ -134,11 +151,8 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private Desire Options()
         {
-            foreach (Point p in getAASMAFramework().visibleNavigationPoints(this))
-            {
-                if (!reachedNavPoints.Contains(p) && getAASMAFramework().isMovablePoint(p))
-                    return Desire.GO_TO_NAV_POINTS;
-            }
+            if (navPointToReach.Count > 0)
+                return Desire.GO_TO_NAV_POINTS;
 
             return Desire.SEARCH_NAV_POINTS;
         }
@@ -152,24 +166,12 @@ namespace Deliberative_AASMAHoshimi.Examples
 
                 case Desire.GO_TO_NAV_POINTS:
                     {
-                        Point nearestNavPoint = Point.Empty;
-                        int distToNavPoint = Int16.MaxValue;
+                        Point p = Point.Empty;
+                        if (navPointToReach.Count > 0)
+                            p = Utils.getNearestPoint(this.Location, navPointToReach);
 
-                        foreach (Point navPosition in getAASMAFramework().visibleNavigationPoints(this))
-                        {
-                            if ( Utils.SquareDistance(this.Location, navPosition) < distToNavPoint &&
-                                 getAASMAFramework().isMovablePoint(navPosition) &&
-                                 !reachedNavPoints.Contains(navPosition))
-                            {
-                                distToNavPoint = Utils.SquareDistance(this.Location, navPosition);
-                                nearestNavPoint = navPosition;
-                            }
-                        }
 
-                        if (nearestNavPoint.IsEmpty)
-                            Debug.WriteLine(this.InternalName + " tried to go to an empty point.");
-
-                        return new Intention(Desire.GO_TO_NAV_POINTS, nearestNavPoint);
+                        return new Intention(Desire.GO_TO_NAV_POINTS, p);
                     }
                 default:
                     return new Intention(Desire.EMPTY, Point.Empty);
@@ -205,7 +207,19 @@ namespace Deliberative_AASMAHoshimi.Examples
            switch(i.getInstruction())
                 {
                     case Instructions.MOVE_TO_NAV_POINT:
+                        Point p = i.getDest();
+                        navPointToReach.Remove(p);
+                        reachedNavPoints.Add(p);
+
+                        AASMAMessage msg = new AASMAMessage(this.InternalName, "E_$ NAVIGATION POINT REACHED");
+                        msg.Tag = p;
+                        getAASMAFramework().broadCastMessage(msg);
+
                         this.MoveTo(i.getDest());
+
+                        
+
+                        
                         break;
                     case Instructions.MOVE:
                         //AASMAMessage msg = new AASMAMessage(this.InternalName, "oi");
@@ -224,7 +238,7 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         public override void receiveMessage(AASMAMessage msg)
         {
-
+            inbox.Add(msg);
         }
 
     }
