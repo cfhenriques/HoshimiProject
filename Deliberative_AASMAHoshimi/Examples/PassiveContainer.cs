@@ -85,6 +85,7 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         List<AASMAMessage> inbox = new List<AASMAMessage>();
         List<Point> empty_needles = new List<Point>();
+        List<Point> azn_points = new List<Point>();
 
         public override void DoActions()
         {
@@ -108,13 +109,51 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private void UpdateBeliefs()
         {
-            foreach (AASMAMessage msg in inbox)
-                if (msg.Content.Equals("C_$ EMPTY NEEDLE"))
+            foreach(Point p in getAASMAFramework().visibleAznPoints(this))
+                if(!azn_points.Contains(p))
                 {
-                    Debug.WriteLine(this.InternalName + " has received a message from " + msg.Sender);
-                    empty_needles.Add((Point)msg.Tag);
+                    azn_points.Add(p);
+                    Debug.WriteLine(this.InternalName + " added an AZNPoint");
                 }
-                    
+
+            foreach (Point p in getAASMAFramework().visibleEmptyNeedles(this))
+                if (!empty_needles.Contains(p))
+                {
+                    empty_needles.Add(p);
+                    Debug.WriteLine(this.InternalName + " added an empty needle");
+                }
+
+            // inbox
+            foreach(AASMAMessage msg in inbox)
+            {
+                if(msg.Content.Equals("C_$ AZN POINT"))
+                {
+                    Point p = (Point)msg.Tag;
+                    if (!azn_points.Contains(p))
+                    {
+                        azn_points.Add(p);
+                        Debug.WriteLine(this.InternalName + " added an AZNPoint");
+                    }
+                }
+                else if (msg.Content.Equals("C_$ EMPTY NEEDLE"))
+                {
+                    Point p = (Point)msg.Tag;
+                    if (!empty_needles.Contains(p))
+                    {
+                        empty_needles.Add(p);
+                        Debug.WriteLine(this.InternalName + " added an empty needle");
+                    }
+                }
+                else if (msg.Content.Equals("C_,E_$ FULL NEEDLE"))
+                {
+                    Point p = (Point)msg.Tag;
+                    if (empty_needles.Contains(p))
+                    {
+                        empty_needles.Remove(p);
+                        Debug.WriteLine(this.InternalName + " removed an empty needle");
+                    }
+                }
+            }
 
         }
 
@@ -122,14 +161,14 @@ namespace Deliberative_AASMAHoshimi.Examples
         {
             if (this.Stock.Equals(this.ContainerCapacity)) // full
             {
-                foreach (Point p in getAASMAFramework().visibleEmptyNeedles(this))
+                if(empty_needles.Count > 0)
                     return Desire.GOTO_NEEDLE;
 
                 return Desire.SEARCH_NEEDLE;
             }
             else //empty
             {
-                foreach (Point p in getAASMAFramework().visibleAznPoints(this))
+                if (azn_points.Count > 0)
                     return Desire.GOTO_AZN;
 
                 return Desire.SEARCH_AZNPOINT;
@@ -145,14 +184,14 @@ namespace Deliberative_AASMAHoshimi.Examples
                 case Desire.SEARCH_NEEDLE:
                     return new Intention(desire, Point.Empty);
                 case Desire.GOTO_AZN:
-                    foreach (Point p in getAASMAFramework().visibleAznPoints(this))
-                        return new Intention(desire, p); 
+                    if (azn_points.Count > 0)
+                        return new Intention(desire, Utils.getNearestPoint(this.Location, azn_points));
 
                     Debug.WriteLine(this.InternalName + " tried to go to an empty azn point");
                     return new Intention(Desire.EMPTY, Point.Empty);
                 case Desire.GOTO_NEEDLE:
-                    foreach (Point p in getAASMAFramework().visibleEmptyNeedles(this))
-                        return new Intention(desire, p); 
+                    if(empty_needles.Count > 0)
+                        return new Intention(desire, Utils.getNearestPoint(this.Location, empty_needles)); 
 
                     Debug.WriteLine(this.InternalName + " tried to go to an inexistent needle");
                     return new Intention(Desire.EMPTY, Point.Empty);
@@ -245,6 +284,7 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         public override void receiveMessage(AASMAMessage msg)
         {
+            getAASMAFramework().logData(this, "received message from " + msg.Sender + " : " + msg.Content);
             inbox.Add(msg);
         }
     }

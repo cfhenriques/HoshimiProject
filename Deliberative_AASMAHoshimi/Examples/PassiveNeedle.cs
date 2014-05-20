@@ -109,7 +109,13 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private void UpdateBeliefs()
         {
-
+            // outbox
+            if(Stock == ContainerCapacity)
+            {
+                AASMAMessage msg = new AASMAMessage(this.InternalName, "C_,E_$ FULL NEEDLE");
+                msg.Tag = this.Location;
+                getAASMAFramework().broadCastMessage(msg);
+            }
         }
 
         private Desire Options()

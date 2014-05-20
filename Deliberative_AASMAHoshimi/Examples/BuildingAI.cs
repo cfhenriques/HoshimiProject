@@ -244,7 +244,6 @@ namespace Deliberative_AASMAHoshimi.Examples
                         RandomTurn();
                     break;
                 case Instructions.MOVE_TO_HOSHIMI:
-                    Debug.WriteLine("AI - Execute - MOVE_TO_HOSHIMI");
                     if (this.getAASMAFramework().visiblePierres(this._nanoAI).Count > 0) 
                     {
                         Debug.WriteLine(this._nanoAI.InternalName + " is seeing pierres");
