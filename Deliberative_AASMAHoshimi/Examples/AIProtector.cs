@@ -18,6 +18,7 @@ namespace Deliberative_AASMAHoshimi.Examples
     {
 
         List<Instruction> currentPlan = new List<Instruction>();
+        List<AASMAMessage> inbox = new List<AASMAMessage>();
 
         enum Desire
         {
@@ -93,30 +94,28 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         public override void DoActions()
         {
-            if (this.State == NanoBotState.WaitingOrders)
+
+            if (currentPlan.Count != 0)
             {
-                if (currentPlan.Count != 0)
-                {
-                    Execute(currentPlan);
-                    UpdateBeliefs();
+                Execute(currentPlan);
+                UpdateBeliefs();
 
+                Reconsider(currentPlan);
+            }
+            else
+            {
+                UpdateBeliefs();
 
-                }
-                else
-                {
-                    UpdateBeliefs();
-
-                    Desire d = Options();
-                    Intention i = Filter(d);
-                    currentPlan = Plan(i);
-
-                }
+                Desire d = Options();
+                Intention i = Filter(d);
+                currentPlan = Plan(i);
             }
         }
 
 
         private void UpdateBeliefs()
         {
+            
 
         }
 
@@ -205,8 +204,8 @@ namespace Deliberative_AASMAHoshimi.Examples
                         RandomTurn();
                     break;
                 case Instructions.MOVE_TO:
-                    if (Utils.SquareDistance(this.Location, i.getPoint()) <= 18)
-                    {
+                    /*if (Utils.SquareDistance(this.Location, i.getPoint()) <= 18)
+                    {*/
                         Debug.WriteLine(this.InternalName + " is moving to AI");
                         Utils.direction randDir;
                         for (int j = 0; j < 4; j++)
@@ -218,7 +217,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                                 return;
                             }
                         }
-                    }
+                    /*}
                     else
                     {
                         Debug.WriteLine(this.InternalName + " is moving slowly to AI");
@@ -243,7 +242,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                             Debug.WriteLine(this.InternalName + " Moving towards AI");
                             return;
                         }
-                    }
+                    }*/
                     break;
                 case Instructions.ATTACK:
                     Debug.WriteLine(this.InternalName + " is attacking");
@@ -255,9 +254,41 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         }
 
+        private void Reconsider(List<Instruction> plan)
+        {
+
+            AASMAMessage[] copy = new AASMAMessage[inbox.Count];
+            inbox.CopyTo(copy);
+            foreach(AASMAMessage msg in copy)
+            {
+                if(msg.Content.Contains("AIP_$ MOVE TO HOSHIMI"))
+                {
+                    Debug.WriteLine(this.InternalName + " reconsidered to move to hoshimi point");
+                    inbox.Remove(msg);
+
+                    if (this.State == NanoBotState.Moving)
+                        this.StopMoving();
+
+                    //plan.Add(new Instruction(Instructions.MOVE_TO, (Point)msg.Tag));
+                    plan.Insert(0, new Instruction(Instructions.MOVE_TO, (Point)msg.Tag));
+                }
+
+            }
+
+            List<Point> pierres = this.getAASMAFramework().visiblePierres(this);
+            if (pierres.Count > 0 && this.State == NanoBotState.Moving)
+            {
+                this.StopMoving();
+                Debug.WriteLine(this.InternalName + " reconsidered to attack pierre");
+                //plan.Add(new Instruction(Instructions.ATTACK, Utils.getNearestPoint(this.Location, pierres)));
+                plan.Insert(0, new Instruction(Instructions.ATTACK, Utils.getNearestPoint(this.Location, pierres)));
+            }
+        }
+
 
         public override void receiveMessage(AASMAMessage msg)
         {
+            inbox.Add(msg);
         }
 
     }

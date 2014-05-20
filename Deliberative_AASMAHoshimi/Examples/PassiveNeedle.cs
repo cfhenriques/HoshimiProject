@@ -84,7 +84,6 @@ namespace Deliberative_AASMAHoshimi.Examples
         }
 
 
-
         public override void DoActions()
         {
             if (this.State == NanoBotState.WaitingOrders)
@@ -103,10 +102,10 @@ namespace Deliberative_AASMAHoshimi.Examples
                     Desire d = Options();
                     Intention i = Filter(d);
                     currentPlan = Plan(i);
-
                 }
             }
         }
+
 
         private void UpdateBeliefs()
         {

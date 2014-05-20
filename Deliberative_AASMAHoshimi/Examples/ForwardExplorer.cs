@@ -17,6 +17,8 @@ namespace Deliberative_AASMAHoshimi.Examples
         List<Point> reachedNavPoints = new List<Point>();
         List<Instruction> currentPlan = new List<Instruction>();
 
+        List<Point> hoshimi_points = new List<Point>();
+
         enum Desire
         {
             EMPTY,
@@ -28,7 +30,6 @@ namespace Deliberative_AASMAHoshimi.Examples
         {
             MOVE,
             MOVE_TO_NAV_POINT,
-
         }
 
         struct Intention
@@ -110,11 +111,26 @@ namespace Deliberative_AASMAHoshimi.Examples
             foreach (Point p in this.getAASMAFramework().visibleNavigationPoints(this))
                 if (p.X == this.Location.X && p.Y == this.Location.Y && !reachedNavPoints.Contains(p))
                 {
-                    Debug.WriteLine(this.InternalName + " adding point x: " + this.Location.X + "   y: " + this.Location.Y);
+                //    Debug.WriteLine(this.InternalName + " adding point x: " + this.Location.X + "   y: " + this.Location.Y);
                     reachedNavPoints.Add(p);
                 }
-                    
+
+
+            // outbox
+            foreach(Point hoshimi in this.getAASMAFramework().visibleHoshimies(this))
+                if( !hoshimi_points.Contains(hoshimi) && 
+                    !getAASMAFramework().visibleFullNeedles(this).Contains(hoshimi) &&
+                    !getAASMAFramework().visibleEmptyNeedles(this).Contains(hoshimi))
+                {
+                    hoshimi_points.Add(hoshimi);
+
+                    AASMAMessage msg = new AASMAMessage(this.InternalName, "AI$ HOSHIMI POINT");
+                    msg.Tag = hoshimi;
+                    getAASMAFramework().sendMessage(msg, "AI");
+                }
         }
+
+        
 
         private Desire Options()
         {
@@ -192,6 +208,8 @@ namespace Deliberative_AASMAHoshimi.Examples
                         this.MoveTo(i.getDest());
                         break;
                     case Instructions.MOVE:
+                        //AASMAMessage msg = new AASMAMessage(this.InternalName, "oi");
+                        //getAASMAFramework().sendMessage(msg, "AI");
                         if (frontClear())
                             MoveForward();
                         else

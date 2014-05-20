@@ -83,7 +83,8 @@ namespace Deliberative_AASMAHoshimi.Examples
         List<Instruction> currentPlan = new List<Instruction>();
         Intention currentIntention = new Intention(Desire.EMPTY, Point.Empty);
 
-
+        List<AASMAMessage> inbox = new List<AASMAMessage>();
+        List<Point> empty_needles = new List<Point>();
 
         public override void DoActions()
         {
@@ -107,6 +108,13 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private void UpdateBeliefs()
         {
+            foreach (AASMAMessage msg in inbox)
+                if (msg.Content.Equals("C_$ EMPTY NEEDLE"))
+                {
+                    Debug.WriteLine(this.InternalName + " has received a message from " + msg.Sender);
+                    empty_needles.Add((Point)msg.Tag);
+                }
+                    
 
         }
 
@@ -237,6 +245,7 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         public override void receiveMessage(AASMAMessage msg)
         {
+            inbox.Add(msg);
         }
     }
 }
