@@ -18,6 +18,8 @@ namespace Deliberative_AASMAHoshimi.Examples
     {
 
         List<Instruction> currentPlan = new List<Instruction>();
+        Intention currentIntention = new Intention(Desire.EMPTY);
+
         List<AASMAMessage> inbox = new List<AASMAMessage>();
 
         enum Desire
@@ -95,20 +97,26 @@ namespace Deliberative_AASMAHoshimi.Examples
         public override void DoActions()
         {
 
-            if (currentPlan.Count != 0)
+            if (!(currentPlan.Count == 0 || Succeeded(currentIntention))) 
+          /*    if(currentPlan.Count != 0)  */
             {
                 Execute(currentPlan);
                 UpdateBeliefs();
 
-                Reconsider(currentPlan);
+                if (Reconsider(currentIntention))
+                {
+                    Desire d = Options();
+                    currentIntention = Filter(d);
+                    currentPlan = Plan(currentIntention);
+                }
             }
             else
             {
                 UpdateBeliefs();
 
                 Desire d = Options();
-                Intention i = Filter(d);
-                currentPlan = Plan(i);
+                currentIntention = Filter(d);
+                currentPlan = Plan(currentIntention);
             }
         }
 
@@ -124,7 +132,18 @@ namespace Deliberative_AASMAHoshimi.Examples
             foreach (Point pierre in this.getAASMAFramework().visiblePierres(this))
                 if (Utils.SquareDistance(this.Location, pierre) <= this.DefenseDistance * this.DefenseDistance)
                     return Desire.DEFEND_PROTEGE;
-            
+
+            // inbox
+            foreach (AASMAMessage msg in inbox)
+            {
+                if (msg.Content.Contains("AIP_$ MOVE TO HOSHIMI"))
+                {
+                    Debug.WriteLine(this.InternalName + " desired to move to hoshimi point");
+                    return Desire.GO_TO_PROTEGE;
+                }
+
+            }
+
             int robotScanDistance = this.Scan + PH.Common.Utils.ScanLength;
             int sqrRobotScanDistance = robotScanDistance * robotScanDistance;
             int sqrDistanceToAI = Utils.SquareDistance(this.Location, this.PlayerOwner.AI.Location);
@@ -147,6 +166,21 @@ namespace Deliberative_AASMAHoshimi.Examples
                     return new Intention(Desire.EMPTY);
 
                 case Desire.GO_TO_PROTEGE:
+                    
+                    // inbox
+                    AASMAMessage[] copy = new AASMAMessage[inbox.Count];
+                    inbox.CopyTo(copy);
+                    foreach (AASMAMessage msg in copy)
+                    {
+                        if (msg.Content.Contains("AIP_$ MOVE TO HOSHIMI"))
+                        {
+                            inbox.Remove(msg);
+                            return new Intention(Desire.GO_TO_PROTEGE, (Point)msg.Tag);
+                        }
+
+                    }
+
+
                     int robotScanDistance = this.Scan + PH.Common.Utils.ScanLength;
                     int sqrRobotScanDistance = robotScanDistance * robotScanDistance;
                     int sqrDistanceToAI = Utils.SquareDistance(this.Location, this.PlayerOwner.AI.Location);
@@ -191,8 +225,17 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private void Execute(List<Instruction> plan)
         {
-            Instruction i = plan[0];
-            plan.RemoveAt(0);
+            Instruction i;
+            if (plan.Count == 0 && currentIntention.getDesire() == Desire.DEFEND_PROTEGE)
+            {
+                 i = new Instruction(Instructions.ATTACK, currentIntention.getPoint());
+            }
+            else
+            {
+                i = plan[0];
+                plan.RemoveAt(0);
+            }
+            
 
             switch (i.getInstruction())
             {
@@ -245,6 +288,9 @@ namespace Deliberative_AASMAHoshimi.Examples
                     }*/
                     break;
                 case Instructions.ATTACK:
+                    if (this.State == NanoBotState.Moving)
+                        this.StopMoving();
+
                     Debug.WriteLine(this.InternalName + " is attacking");
                     this.DefendTo(i.getPoint(), 2);
                     break;
@@ -253,7 +299,7 @@ namespace Deliberative_AASMAHoshimi.Examples
             }
 
         }
-
+        /*
         private void Reconsider(List<Instruction> plan)
         {
 
@@ -284,7 +330,34 @@ namespace Deliberative_AASMAHoshimi.Examples
                 plan.Insert(0, new Instruction(Instructions.ATTACK, Utils.getNearestPoint(this.Location, pierres)));
             }
         }
+        */
+        private bool Reconsider(Intention i)
+        {
+            if (i.getDesire() == Desire.DEFEND_PROTEGE)
+                return false;
 
+            if (this.State == NanoBotState.Moving && this.getAASMAFramework().visiblePierres(this).Count > 0)
+                return true;
+            
+
+            return false;
+        }
+
+        private bool Succeeded(Intention i)
+        {
+            if (i.getDesire() == Desire.DEFEND_PROTEGE && this.getAASMAFramework().visiblePierres(this).Count > 0)
+            {
+                return false;
+            }
+
+            if (currentPlan.Count != 0)
+            {
+                return false;
+
+            }
+                
+            return true;
+        }
 
         public override void receiveMessage(AASMAMessage msg)
         {

@@ -146,18 +146,22 @@ namespace Deliberative_AASMAHoshimi.Examples
                 return Desire.CREATE_ROBOTS;
 
             if(!this.getAASMAFramework().overNeedle(this._nanoAI) )
+            {
                 foreach (Point p in this.getAASMAFramework().visibleHoshimies(this._nanoAI))
-                    if( !getAASMAFramework().visibleFullNeedles(this._nanoAI).Contains(p) &&
+                    if (!getAASMAFramework().visibleFullNeedles(this._nanoAI).Contains(p) &&
                         !getAASMAFramework().visibleEmptyNeedles(this._nanoAI).Contains(p))
                         return Desire.CREATE_ROBOTS;
 
-            if (this.getAASMAFramework().explorersAlive() < 2 ||
-                this.getAASMAFramework().containersAlive() < 2)
-                return Desire.CREATE_ROBOTS;
+                if ( this.getAASMAFramework().explorersAlive() < 2 ||
+                     this.getAASMAFramework().containersAlive() < 2)
+                    return Desire.CREATE_ROBOTS;
 
-            if (empty_hoshimi.Count > 0)
-                return Desire.CREATE_ROBOTS;
-            
+                if (empty_hoshimi.Count > 0)
+                    return Desire.CREATE_ROBOTS;
+
+            }
+                
+
             return Desire.SEARCH_HOSHIMI;
         }
 
@@ -168,15 +172,22 @@ namespace Deliberative_AASMAHoshimi.Examples
                 case Desire.CREATE_ROBOTS:
                     if(this.getAASMAFramework().protectorsAlive() < 3)
                         return new Intention(desire);
-                    else if (!this.getAASMAFramework().overNeedle(this._nanoAI)) 
+                    
+                    if (!this.getAASMAFramework().overNeedle(this._nanoAI)) 
                     {
                         foreach (Point p in this.getAASMAFramework().visibleHoshimies(this._nanoAI))
                             if ( !getAASMAFramework().visibleFullNeedles(this._nanoAI).Contains(p) &&
                                  !getAASMAFramework().visibleEmptyNeedles(this._nanoAI).Contains(p))
                                 return new Intention(desire, p);
+
+                        if (this.getAASMAFramework().explorersAlive() < 2 || this.getAASMAFramework().containersAlive() < 2)
+                            return new Intention(desire);
+
+                        if (empty_hoshimi.Count > 0)
+                            return new Intention(desire, Utils.getNearestPoint(this._nanoAI.Location, empty_hoshimi));
                     }
-                    else if (empty_hoshimi.Count > 0 && this.getAASMAFramework().explorersAlive() == 2 && this.getAASMAFramework().containersAlive() == 2)
-                        return new Intention(desire, Utils.getNearestPoint(this._nanoAI.Location, empty_hoshimi));
+
+                    
 
 
                     return new Intention(desire);
@@ -233,10 +244,14 @@ namespace Deliberative_AASMAHoshimi.Examples
                         RandomTurn();
                     break;
                 case Instructions.MOVE_TO_HOSHIMI:
+                    Debug.WriteLine("AI - Execute - MOVE_TO_HOSHIMI");
                     if (this.getAASMAFramework().visiblePierres(this._nanoAI).Count > 0) 
                     {
+                        Debug.WriteLine(this._nanoAI.InternalName + " is seeing pierres");
+                        Debug.WriteLine(this._nanoAI.InternalName + " state 1: " + this._nanoAI.State);
                         if (this._nanoAI.State == NanoBotState.Moving)
                             this._nanoAI.StopMoving();
+                        Debug.WriteLine(this._nanoAI.InternalName + " state 2: " + this._nanoAI.State);
                     }
                     else
                     {
@@ -286,29 +301,39 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private bool Succeeded(Intention intention)
         {
+            Debug.Write("AI Succeeded: ");
             if (intention.getDesire().Equals(Desire.CREATE_ROBOTS) && !intention.getPoint().IsEmpty)
             {
-
-                Debug.WriteLine("Succeeded - 1");
                 if ( this.getAASMAFramework().overHoshimiPoint(this._nanoAI) && 
                      this.getAASMAFramework().overNeedle(this._nanoAI))
                 {
-                    Debug.WriteLine("Succeeded - 2");
 
                     if (empty_hoshimi.Contains(intention.getPoint()))
+                    {
+                        Debug.WriteLine("false");
                         return false;
+                    }
 
+                    
                     return true;
                 }
                 else
+                {
+                    Debug.WriteLine("false");
                     return false;
+                }
+                    
 
 
             }
 
-            Debug.WriteLine("Succeeded - 3");
             if (currentPlan.Count != 0)
+            {
+                Debug.WriteLine("false");
                 return false;
+            }
+
+            Debug.WriteLine("true");
             return true;
         }
 
