@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reactive_AASMAHoshimi", "AA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deliberative_AASMAHoshimi", "Deliberative_AASMAHoshimi\Deliberative_AASMAHoshimi.csproj", "{5DC9F500-F53B-4D37-A641-12946303F164}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hibrid_AASMAHoshimi", "Hibrid_AASMAHoshimi\Hibrid_AASMAHoshimi.csproj", "{0577A993-9A87-49F9-9666-4D948207F4BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{5DC9F500-F53B-4D37-A641-12946303F164}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DC9F500-F53B-4D37-A641-12946303F164}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DC9F500-F53B-4D37-A641-12946303F164}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0577A993-9A87-49F9-9666-4D948207F4BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0577A993-9A87-49F9-9666-4D948207F4BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0577A993-9A87-49F9-9666-4D948207F4BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0577A993-9A87-49F9-9666-4D948207F4BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

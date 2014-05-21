@@ -91,8 +91,6 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         public override void DoActions()
         {
-         /*   if (this.State == NanoBotState.WaitingOrders)
-            { */
                 if (currentPlan.Count != 0 || !Succeeded(currentIntention))
                 {
                     Execute(currentPlan);
@@ -120,17 +118,11 @@ namespace Deliberative_AASMAHoshimi.Examples
         {
             foreach(Point p in getAASMAFramework().visibleAznPoints(this))
                 if(!azn_points.Contains(p))
-                {
                     azn_points.Add(p);
-                 //   Debug.WriteLine(this.InternalName + " added an AZNPoint");
-                }
 
             foreach (Point p in getAASMAFramework().visibleEmptyNeedles(this))
                 if (!empty_needles.Contains(p))
-                {
                     empty_needles.Add(p);
-                //    Debug.WriteLine(this.InternalName + " added an empty needle");
-                }
 
             // inbox
             foreach(AASMAMessage msg in inbox)
@@ -332,10 +324,20 @@ namespace Deliberative_AASMAHoshimi.Examples
         {
 
             if (i.getDesire() == Desire.GOTO_AZN && getAASMAFramework().visibleAznPoints(this).Count > 0 && !getAASMAFramework().overAZN(this))
+            {
+            //    if (State == NanoBotState.Moving)
+            //        StopMoving();
+
                 return true;
+            }
+                
 
             if (i.getDesire() == Desire.GOTO_NEEDLE && getAASMAFramework().visibleEmptyNeedles(this).Count > 0 && !getAASMAFramework().overEmptyNeedle(this))
+            {
+            //    if (State == NanoBotState.Moving)
+            //        StopMoving();
                 return true;
+            }
 
             return false;
         }
