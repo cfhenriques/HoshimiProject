@@ -12,7 +12,9 @@ namespace Deliberative_AASMAHoshimi.Examples
     [Characteristics(ContainerCapacity = 50, CollectTransfertSpeed = 5, Scan = 0, MaxDamage = 0, DefenseDistance = 0, Constitution = 15)]
     class PassiveContainer : AASMAContainer
     {
-        
+
+        String myprotector;
+
         enum Desire
         {
             EMPTY,
@@ -133,13 +135,13 @@ namespace Deliberative_AASMAHoshimi.Examples
             // inbox
             foreach(AASMAMessage msg in inbox)
             {
-                if(msg.Content.Equals("C_$ AZN POINT"))
+                if (msg.Content.Equals("C_$ AZN POINT"))
                 {
                     Point p = (Point)msg.Tag;
                     if (!azn_points.Contains(p))
                     {
                         azn_points.Add(p);
-                     //   Debug.WriteLine(this.InternalName + " added an AZNPoint");
+                        //   Debug.WriteLine(this.InternalName + " added an AZNPoint");
                     }
                 }
                 else if (msg.Content.Equals("C_$ EMPTY NEEDLE"))
@@ -148,7 +150,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                     if (!empty_needles.Contains(p))
                     {
                         empty_needles.Add(p);
-                     //   Debug.WriteLine(this.InternalName + " added an empty needle");
+                        //   Debug.WriteLine(this.InternalName + " added an empty needle");
                     }
                 }
                 else if (msg.Content.Equals("C_,E_$ FULL NEEDLE"))
@@ -157,7 +159,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                     if (empty_needles.Contains(p))
                     {
                         empty_needles.Remove(p);
-                     //   Debug.WriteLine(this.InternalName + " removed an empty needle");
+                        //   Debug.WriteLine(this.InternalName + " removed an empty needle");
                     }
                 }
                 else if (msg.Content.Equals(InternalName + "$  AZN POINTS"))
@@ -168,6 +170,8 @@ namespace Deliberative_AASMAHoshimi.Examples
                 {
                     empty_needles = (List<Point>)msg.Tag;
                 }
+                else if (msg.Content.Contains(InternalName + "$ Protector number"))
+                    myprotector = msg.Content.Split(new char[] { ':' })[1];
 
             }
 
@@ -264,7 +268,13 @@ namespace Deliberative_AASMAHoshimi.Examples
             switch (i.getInstruction())
             {
                 case Instructions.MOVE_TO:
-                    this.MoveTo(i.getDest());
+                    Point p = i.getDest();
+                    this.MoveTo(p);
+
+                    AASMAMessage msg1 = new AASMAMessage(this.InternalName, myprotector + "$ Container's location");
+                    msg1.Tag = p;
+                    getAASMAFramework().sendMessage(msg1, myprotector);
+
                     break;
                 case Instructions.MOVE:
                     if (frontClear())

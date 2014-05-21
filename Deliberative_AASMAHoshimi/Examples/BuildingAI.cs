@@ -328,6 +328,11 @@ namespace Deliberative_AASMAHoshimi.Examples
                         msg_1.Tag = i.getPoint();
                         getAASMAFramework().broadCastMessage(msg_1);
                     }
+
+                    AASMAMessage msg_2 = new AASMAMessage(this._nanoAI.InternalName, "C" + _containerNumber + "$ Protector number:CP" + this._protectorNumber);
+                    msg_2.Tag = i.getPoint();
+                    getAASMAFramework().sendMessage(msg_2, "C" + _containerNumber);
+
                     this._containerNumber++;
                     break;
 
