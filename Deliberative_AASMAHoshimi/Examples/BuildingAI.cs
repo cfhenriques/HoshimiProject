@@ -19,6 +19,7 @@ namespace Deliberative_AASMAHoshimi.Examples
         List<Point> empty_hoshimi = new List<Point>();
 
         List<String> _AIProtectors = new List<String>();
+        List<String> RProtectors = new List<String>();
 
         enum Desire
         {
@@ -146,6 +147,8 @@ namespace Deliberative_AASMAHoshimi.Examples
             {
                 if(msg.Content.Equals("AI$ AIPROTECTOR BEING KILLED"))
                     _AIProtectors.Remove(msg.Sender);
+                else if (msg.Content.Equals("AI$ RPROTECTOR BEING KILLED"))
+                    RProtectors.Remove(msg.Sender);
                 else if(msg.Content.Equals("AI$ HOSHIMI POINT") && !empty_hoshimi.Contains((Point)msg.Tag))
                 {
                     empty_hoshimi.Add((Point)msg.Tag);
@@ -159,24 +162,25 @@ namespace Deliberative_AASMAHoshimi.Examples
         private Desire Options()
         {
             List<Point> pierres = getAASMAFramework().visiblePierres(this._nanoAI);
+
             if (pierres.Count > 0 && _nanoAI.State == NanoBotState.Moving)
                 return Desire.EMPTY;
             
             if(_AIProtectors.Count < 3)
                 return Desire.CREATE_ROBOTS;
 
+            if (RProtectors.Count < 5)
+                return Desire.CREATE_ROBOTS;
+
             if ( this.getAASMAFramework().explorersAlive() < 2 || this.getAASMAFramework().containersAlive() < 2)
                 return Desire.CREATE_ROBOTS;
 
-            if (empty_hoshimi.Count > 0 && pierres.Count == 0)
-            {
-                return Desire.CREATE_ROBOTS;
-            }
-                
-
             if (pierres.Count > 0)
                 return Desire.EMPTY;
-            
+
+            if (empty_hoshimi.Count > 0)
+                return Desire.CREATE_ROBOTS;
+
             return Desire.SEARCH_HOSHIMI; 
         }
 
@@ -185,7 +189,10 @@ namespace Deliberative_AASMAHoshimi.Examples
             switch(desire)
             {
                 case Desire.CREATE_ROBOTS:
-                    if(_AIProtectors.Count < 3)
+                    if (_AIProtectors.Count < 3 )
+                        return new Intention(desire);
+
+                    if (RProtectors.Count < 5)
                         return new Intention(desire);
 
                     if (this.getAASMAFramework().explorersAlive() < 2 || this.getAASMAFramework().containersAlive() < 2)
@@ -194,16 +201,16 @@ namespace Deliberative_AASMAHoshimi.Examples
                     if (empty_hoshimi.Count > 0)
                         return new Intention(desire, Utils.getNearestPoint(this._nanoAI.Location, empty_hoshimi));
 
-
-                    return new Intention(desire);
+                    break;
                 case Desire.SEARCH_HOSHIMI:
                     return new Intention(desire);
 
                 case Desire.EMPTY:
                     return new Intention(desire);
-                default:
-                    return new Intention(Desire.EMPTY);
+                    
             }
+
+            return new Intention(Desire.EMPTY);
         }
 
         private List<Instruction> Plan(Intention intention)
@@ -224,8 +231,14 @@ namespace Deliberative_AASMAHoshimi.Examples
                     else if(_AIProtectors.Count < 3) 
                         myplan.Add(new Instruction(Instructions.CREATE_AI_PROTECTOR));
 
+                    else if (RProtectors.Count < 3)
+                        myplan.Add(new Instruction(Instructions.CREATE_RANDOM_PROTECTOR));
+
                     else if (this.getAASMAFramework().containersAlive() < 2)
+                    {
                         myplan.Add(new Instruction(Instructions.CREATE_CONTAINER));
+                        myplan.Add(new Instruction(Instructions.CREATE_CONTAINER_PROTECTOR));
+                    }
                         // + container protectors
                     else if (this.getAASMAFramework().explorersAlive() < 2)
                         myplan.Add(new Instruction(Instructions.CREATE_EXPLORER));
@@ -250,6 +263,7 @@ namespace Deliberative_AASMAHoshimi.Examples
         {
             Instruction i = plan[0];
 
+            Debug.WriteLine("Executing " + i.getInstruction().ToString());
             switch (i.getInstruction())
             {
                 case Instructions.DO_NOTHING:
@@ -265,12 +279,9 @@ namespace Deliberative_AASMAHoshimi.Examples
                     break;
 
                 case Instructions.MOVE_TO_HOSHIMI:
-                    Debug.WriteLine("fora");
                         if(_nanoAI.State != NanoBotState.Moving)
                         {
                             Point p = i.getPoint();
-                            Debug.WriteLine("AI location: x " + _nanoAI.Location.X + "  y " + _nanoAI.Location.Y );
-                            Debug.WriteLine("dest: x " + p.X + "  y " + p.Y + " movable=" + getAASMAFramework().isMovablePoint(p));
 
                             AASMAMessage msg = new AASMAMessage(this._nanoAI.InternalName, "AIP_$ MOVE TO HOSHIMI");
                             msg.Tag = p;
@@ -300,7 +311,8 @@ namespace Deliberative_AASMAHoshimi.Examples
                     empty_hoshimi.Remove(this._nanoAI.Location);
                     break;
                 case Instructions.CREATE_RANDOM_PROTECTOR:
-                    this._nanoAI.Build(typeof(RandomProtector), "RP" + this._protectorNumber++);
+                    this._nanoAI.Build(typeof(RandomProtector), "RP" + this._protectorNumber);
+                    RProtectors.Add("RP" + this._protectorNumber++);
                     break;
 
                 case Instructions.CREATE_EXPLORER:
@@ -336,11 +348,11 @@ namespace Deliberative_AASMAHoshimi.Examples
         private bool Reconsider(Intention i) // should receive beleifs and intentions
         {
             List<Point> pierres = this.getAASMAFramework().visiblePierres(this._nanoAI);
-            if (pierres.Count > 0)
+            if (pierres.Count > 0 && _nanoAI.State == NanoBotState.Moving)
                 return true;
 
             if(currentPlan.Count == 0)
-                return true;
+                return false;
 
             if( i.getDesire() == Desire.CREATE_ROBOTS && !i.getPoint().IsEmpty &&
                 !empty_hoshimi.Contains(_nanoAI.Location) && _nanoAI.State != NanoBotState.Moving)
@@ -351,46 +363,6 @@ namespace Deliberative_AASMAHoshimi.Examples
 
             return false;
         }
-
-        private bool Succeeded(Intention intention)
-        {
-        //    Debug.Write("AI Succeeded: ");
-            /*if (currentPlan.Count != 0)
-            {
-                return false;
-            }*/
-            if (intention.getDesire().Equals(Desire.CREATE_ROBOTS) /*&& !intention.getPoint().IsEmpty*/)
-            {
-                if ( this.getAASMAFramework().overHoshimiPoint(this._nanoAI) && 
-                     this.getAASMAFramework().overNeedle(this._nanoAI))
-                {
-
-                    if (!intention.getPoint().IsEmpty && empty_hoshimi.Contains(intention.getPoint()))
-                    {
-                        return false;
-                    }
-                    else if (currentPlan.Count != 0)
-                        return false;
-
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-                    
-
-
-            }
-
-            if (currentPlan.Count != 0)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         
         public override void receiveMessage(AASMAMessage msg)
         {

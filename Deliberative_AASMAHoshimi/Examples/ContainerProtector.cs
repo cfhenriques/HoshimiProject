@@ -16,17 +16,7 @@ namespace Deliberative_AASMAHoshimi.Examples
         Constitution = 28)]
     public class ContainerProtector : AASMAProtector
     {
-        public override void DoActions()
-        {
-            //Debug.WriteLine(this.NanoBotInfo.InternalName + " DoActions");
-            if(this.State == NanoBotState.WaitingOrders)
-            {
-                if (canAttack())
-                    AttackEnemy();
-                else 
-                    Move();
-            }
-        }
+        /*
 
         private void Move()
         {
@@ -88,6 +78,12 @@ namespace Deliberative_AASMAHoshimi.Examples
             else
                 this.RandomTurn();
         }
+        */
+        protected override void UpdateBeliefs()
+        {
+            
+        }
+
 
         public override void receiveMessage(AASMAMessage msg)
         {

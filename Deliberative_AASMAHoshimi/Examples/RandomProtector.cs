@@ -13,19 +13,24 @@ namespace Deliberative_AASMAHoshimi.Examples
     [Characteristics(ContainerCapacity = 0, CollectTransfertSpeed = 0, Scan = 5, MaxDamage = 5, DefenseDistance = 12, Constitution = 28)]
     public class RandomProtector : AASMAProtector
     {
-        public override void  DoActions()
-        {
 
-            if (this.State == NanoBotState.WaitingOrders)
+
+        protected override void UpdateBeliefs()
+        {
+            if (HitPoint < 5)
             {
-                if(canAttack())
-                    AttackEnemy();
-                else
-                    Move();
-                
+                AASMAMessage msg = new AASMAMessage(this.InternalName, "AI$ RPROTECTOR BEING KILLED");
+                getAASMAFramework().sendMessage(msg, "AI");
             }
         }
 
+        public override void receiveMessage(AASMAMessage msg)
+        {
+            if (msg.Content.Contains("RP_") || msg.Content.Contains(InternalName))
+                inbox.Add(msg);
+        }
+
+        /*
         public void Move()
         {
             int sqrDefenceDistance, sqrDistanceToEnemy;
@@ -67,10 +72,7 @@ namespace Deliberative_AASMAHoshimi.Examples
             else
                 this.RandomTurn();
         }
-
-        public override void receiveMessage(AASMAMessage msg)
-        {
-        }
+        */
         
     }
 }

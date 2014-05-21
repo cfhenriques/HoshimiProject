@@ -296,8 +296,6 @@ namespace Deliberative_AASMAHoshimi.Examples
                         }  
                         break;
                     case Instructions.MOVE:
-                        //AASMAMessage msg = new AASMAMessage(this.InternalName, "oi");
-                        //getAASMAFramework().sendMessage(msg, "AI");
                         if (frontClear())
                             MoveForward();
                         else
