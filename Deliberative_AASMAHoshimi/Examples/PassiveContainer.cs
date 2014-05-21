@@ -89,12 +89,19 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         public override void DoActions()
         {
-            if (this.State == NanoBotState.WaitingOrders)
-            {
+         /*   if (this.State == NanoBotState.WaitingOrders)
+            { */
                 if (currentPlan.Count != 0 || !Succeeded(currentIntention))
                 {
                     Execute(currentPlan);
                     UpdateBeliefs();
+
+                    if(Reconsider(currentIntention))
+                    {
+                        Desire d = Options();
+                        currentIntention = Filter(d);
+                        currentPlan = Plan(currentIntention);
+                    }
                 }
                 else
                 {
@@ -104,7 +111,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                     currentIntention = Filter(d);
                     currentPlan = Plan(currentIntention);
                 }
-            }
+            // }
         }
 
         private void UpdateBeliefs()
@@ -113,14 +120,14 @@ namespace Deliberative_AASMAHoshimi.Examples
                 if(!azn_points.Contains(p))
                 {
                     azn_points.Add(p);
-                    Debug.WriteLine(this.InternalName + " added an AZNPoint");
+                 //   Debug.WriteLine(this.InternalName + " added an AZNPoint");
                 }
 
             foreach (Point p in getAASMAFramework().visibleEmptyNeedles(this))
                 if (!empty_needles.Contains(p))
                 {
                     empty_needles.Add(p);
-                    Debug.WriteLine(this.InternalName + " added an empty needle");
+                //    Debug.WriteLine(this.InternalName + " added an empty needle");
                 }
 
             // inbox
@@ -132,7 +139,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                     if (!azn_points.Contains(p))
                     {
                         azn_points.Add(p);
-                        Debug.WriteLine(this.InternalName + " added an AZNPoint");
+                     //   Debug.WriteLine(this.InternalName + " added an AZNPoint");
                     }
                 }
                 else if (msg.Content.Equals("C_$ EMPTY NEEDLE"))
@@ -141,7 +148,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                     if (!empty_needles.Contains(p))
                     {
                         empty_needles.Add(p);
-                        Debug.WriteLine(this.InternalName + " added an empty needle");
+                     //   Debug.WriteLine(this.InternalName + " added an empty needle");
                     }
                 }
                 else if (msg.Content.Equals("C_,E_$ FULL NEEDLE"))
@@ -150,9 +157,18 @@ namespace Deliberative_AASMAHoshimi.Examples
                     if (empty_needles.Contains(p))
                     {
                         empty_needles.Remove(p);
-                        Debug.WriteLine(this.InternalName + " removed an empty needle");
+                     //   Debug.WriteLine(this.InternalName + " removed an empty needle");
                     }
                 }
+                else if (msg.Content.Equals(InternalName + "$  AZN POINTS"))
+                {
+                    azn_points = (List<Point>)msg.Tag;
+                }
+                else if (msg.Content.Equals(InternalName + "$  EMPTY NEEDLES"))
+                {
+                    empty_needles = (List<Point>)msg.Tag;
+                }
+
             }
 
         }
@@ -164,6 +180,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                 if(empty_needles.Count > 0)
                     return Desire.GOTO_NEEDLE;
 
+             //   Debug.WriteLine("CONTAINER " + InternalName + " perdido (needles)");
                 return Desire.SEARCH_NEEDLE;
             }
             else //empty
@@ -171,6 +188,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                 if (azn_points.Count > 0)
                     return Desire.GOTO_AZN;
 
+             //   Debug.WriteLine("CONTAINER " + InternalName + " perdido (azn points)");
                 return Desire.SEARCH_AZNPOINT;
             }
 
@@ -187,13 +205,13 @@ namespace Deliberative_AASMAHoshimi.Examples
                     if (azn_points.Count > 0)
                         return new Intention(desire, Utils.getNearestPoint(this.Location, azn_points));
 
-                    Debug.WriteLine(this.InternalName + " tried to go to an empty azn point");
+               //     Debug.WriteLine(this.InternalName + " tried to go to an empty azn point");
                     return new Intention(Desire.EMPTY, Point.Empty);
                 case Desire.GOTO_NEEDLE:
                     if(empty_needles.Count > 0)
                         return new Intention(desire, Utils.getNearestPoint(this.Location, empty_needles)); 
 
-                    Debug.WriteLine(this.InternalName + " tried to go to an inexistent needle");
+               //     Debug.WriteLine(this.InternalName + " tried to go to an inexistent needle");
                     return new Intention(Desire.EMPTY, Point.Empty);
 
                 default:
@@ -210,6 +228,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                 case Desire.SEARCH_AZNPOINT:
                 case Desire.SEARCH_NEEDLE:
                     myplan.Add(new Instruction(Instructions.MOVE));
+                //    Debug.WriteLine(this.InternalName + " plan -> move random");
                     break;
                 case Desire.GOTO_AZN:
                     myplan.Add(new Instruction(Instructions.MOVE_TO, intention.getDest()));
@@ -256,14 +275,14 @@ namespace Deliberative_AASMAHoshimi.Examples
                 case Instructions.COLLECT:
                     if (this.getAASMAFramework().overAZN(this))
                         this.collectAZN();
-                    else
-                        Debug.WriteLine(this.InternalName + " tried to collect AZN when far from AZN Point");
+                  //  else
+                    //    Debug.WriteLine(this.InternalName + " tried to collect AZN when far from AZN Point");
                     break;
                 case Instructions.DROP:
                     if (this.getAASMAFramework().overEmptyNeedle(this))
                         this.transferAZN();
-                    else
-                        Debug.WriteLine(this.InternalName + " tried to collect AZN when far from Needle");
+                   // else
+                   //     Debug.WriteLine(this.InternalName + " tried to collect AZN when far from Needle");
                     break;
                 default:
                     break;
@@ -273,19 +292,50 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private bool Succeeded(Intention i)
         {
-            if (i.getDesire() == Desire.GOTO_AZN && this.getAASMAFramework().overAZN(this) && this.Stock < this.ContainerCapacity)
-                return false;
-            else if (i.getDesire() == Desire.GOTO_NEEDLE && this.getAASMAFramework().overEmptyNeedle(this) && this.Stock != 0)
-                return false;
+            if (i.getDesire() == Desire.GOTO_AZN)
+            {
+                if(!this.getAASMAFramework().overAZN(this))
+                    return false;
+                else if(this.Stock < ContainerCapacity)
+                    return false;
 
+                //Debug.WriteLine(this.InternalName + " GOTO_AZN: " + this.getAASMAFramework().overAZN(this) + " : " + this.Stock);
+                
+            }
+            else if (i.getDesire() == Desire.GOTO_NEEDLE)
+            {
+                if(!this.getAASMAFramework().overEmptyNeedle(this) && this.getAASMAFramework().overNeedle(this))
+                    return true;
+                else if(!this.getAASMAFramework().overEmptyNeedle(this))
+                    return false;
+                else if(this.Stock != 0)
+                    return false;
+                
 
+                //Debug.WriteLine(this.InternalName + " GOTO_NEEDLE: " + this.getAASMAFramework().overEmptyNeedle(this) + " : " + this.Stock);
+            }
+                
             return true;
+        }
+
+        private bool Reconsider(Intention i)
+        {
+
+            if (i.getDesire() == Desire.GOTO_AZN && getAASMAFramework().visibleAznPoints(this).Count > 0 && !getAASMAFramework().overAZN(this))
+                return true;
+
+            if (i.getDesire() == Desire.GOTO_NEEDLE && getAASMAFramework().visibleEmptyNeedles(this).Count > 0 && !getAASMAFramework().overEmptyNeedle(this))
+                return true;
+
+            return false;
         }
 
         public override void receiveMessage(AASMAMessage msg)
         {
-            getAASMAFramework().logData(this, "received message from " + msg.Sender + " : " + msg.Content);
-            inbox.Add(msg);
+         //   getAASMAFramework().logData(this, "received message from " + msg.Sender + " : " + msg.Content);
+            if(msg.Content.Contains("C_") || msg.Content.Contains(this.InternalName))
+                inbox.Add(msg);
+
         }
     }
 }

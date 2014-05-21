@@ -118,7 +118,7 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private void UpdateBeliefs()
         {
-            Debug.WriteLine(this.InternalName + " UpdateBeliefs");
+       //     Debug.WriteLine(this.InternalName + " UpdateBeliefs");
             // if seeing navigation points
             foreach (Point p in this.getAASMAFramework().visibleNavigationPoints(this))
             {
@@ -154,6 +154,18 @@ namespace Deliberative_AASMAHoshimi.Examples
                     if (hoshimi_points.Contains(p))
                         hoshimi_points.Remove(p);
 
+                }
+                else if (msg.Content.Contains("E_$ CONTAINER CREATED"))
+                {
+                    String receiver = msg.Content.Split(new char[] { ':' })[1];
+
+                    AASMAMessage new_msg = new AASMAMessage(this.InternalName, receiver + "$ AZN POINTS");
+                    new_msg.Tag = azn_points;
+                    getAASMAFramework().sendMessage(new_msg, receiver);
+
+                    new_msg = new AASMAMessage(this.InternalName, receiver + "$ EMPTY NEEDLES");
+                    new_msg.Tag = empty_needles;
+                    getAASMAFramework().sendMessage(new_msg, receiver);
                 }
             }
 
@@ -321,8 +333,9 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         public override void receiveMessage(AASMAMessage msg)
         {
-            getAASMAFramework().logData(this, " received message from " + msg.Sender + " : " + msg.Content);
-            inbox.Add(msg);
+        //    getAASMAFramework().logData(this, " received message from " + msg.Sender + " : " + msg.Content);
+            if (msg.Content.Contains("E_") || msg.Content.Contains(InternalName))
+                inbox.Add(msg);
         }
 
     }

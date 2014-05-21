@@ -136,12 +136,12 @@ namespace Deliberative_AASMAHoshimi.Examples
                         if (Utils.SquareDistance(this.Location, p) <= this.DefenseDistance * this.DefenseDistance)
                             return new Intention(desire, p);
 
-                    Debug.Write( this.InternalName + " is trying to attack no one");
+                 //   Debug.Write( this.InternalName + " is trying to attack no one");
                     return new Intention(Desire.EMPTY);
                 case Desire.SEARCH_PIERRE:
                     return new Intention(desire);
                 default:
-                    Debug.WriteLine(this.InternalName + " built an empty intention");
+                //    Debug.WriteLine(this.InternalName + " built an empty intention");
                     return new Intention(Desire.EMPTY);
             }
         }

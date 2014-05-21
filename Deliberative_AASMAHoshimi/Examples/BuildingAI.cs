@@ -18,6 +18,8 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         List<Point> empty_hoshimi = new List<Point>();
 
+        List<String> _AIProtectors = new List<String>();
+
         enum Desire
         {
             EMPTY,
@@ -31,7 +33,10 @@ namespace Deliberative_AASMAHoshimi.Examples
             MOVE_TO_HOSHIMI,
             CREATE_CONTAINER,
             CREATE_NEEDLE,
-            CREATE_PROTECTOR,
+            CREATE_AI_PROTECTOR,
+            CREATE_CONTAINER_PROTECTOR,
+            CREATE_NEEDLE_PROTECTOR,
+            CREATE_RANDOM_PROTECTOR,
             CREATE_EXPLORER,
             DO_NOTHING
         }
@@ -127,13 +132,17 @@ namespace Deliberative_AASMAHoshimi.Examples
         private void UpdateBeliefs()
         {
 
+            
+
             // inbox
             foreach(AASMAMessage msg in inbox)
             {
-                if(msg.Content.Equals("AI$ HOSHIMI POINT") && !empty_hoshimi.Contains((Point)msg.Tag))
+                if(msg.Content.Equals("AI$ AIPROTECTOR BEING KILLED"))
+                    _AIProtectors.Remove(msg.Sender);
+                else if(msg.Content.Equals("AI$ HOSHIMI POINT") && !empty_hoshimi.Contains((Point)msg.Tag))
                 {
                     empty_hoshimi.Add((Point)msg.Tag);
-                    Debug.WriteLine(this._nanoAI.InternalName + ": hoshimi point found by " + msg.Sender + "    | Point = (" + ((Point)msg.Tag).X + "," + ((Point)msg.Tag).Y + ")");
+              //      Debug.WriteLine(this._nanoAI.InternalName + ": hoshimi point found by " + msg.Sender + "    | Point = (" + ((Point)msg.Tag).X + "," + ((Point)msg.Tag).Y + ")");
                 }
             }
 
@@ -142,7 +151,11 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private Desire Options()
         {
-            if(this.getAASMAFramework().protectorsAlive() < 3)
+            List<Point> pierres = getAASMAFramework().visiblePierres(this._nanoAI);
+            if (pierres.Count > 0 && _nanoAI.State == NanoBotState.Moving)
+                return Desire.EMPTY;
+            
+            if(_AIProtectors.Count < 3)
                 return Desire.CREATE_ROBOTS;
 
             if(!this.getAASMAFramework().overNeedle(this._nanoAI) )
@@ -156,13 +169,15 @@ namespace Deliberative_AASMAHoshimi.Examples
                      this.getAASMAFramework().containersAlive() < 2)
                     return Desire.CREATE_ROBOTS;
 
-                if (empty_hoshimi.Count > 0)
+                if (empty_hoshimi.Count > 0 && pierres.Count == 0)
                     return Desire.CREATE_ROBOTS;
 
             }
-                
 
-            return Desire.SEARCH_HOSHIMI;
+            if (getAASMAFramework().visiblePierres(this._nanoAI).Count > 0)
+                return Desire.EMPTY;
+            else
+                return Desire.SEARCH_HOSHIMI; 
         }
 
         private Intention Filter(Desire desire)
@@ -170,7 +185,7 @@ namespace Deliberative_AASMAHoshimi.Examples
             switch(desire)
             {
                 case Desire.CREATE_ROBOTS:
-                    if(this.getAASMAFramework().protectorsAlive() < 3)
+                    if(_AIProtectors.Count < 3)
                         return new Intention(desire);
                     
                     if (!this.getAASMAFramework().overNeedle(this._nanoAI)) 
@@ -193,6 +208,9 @@ namespace Deliberative_AASMAHoshimi.Examples
                     return new Intention(desire);
                 case Desire.SEARCH_HOSHIMI:
                     return new Intention(desire);
+
+                case Desire.EMPTY:
+                    return new Intention(desire);
                 default:
                     return new Intention(Desire.EMPTY);
             }
@@ -204,24 +222,32 @@ namespace Deliberative_AASMAHoshimi.Examples
 
             switch (intention.getDesire())
             {
-                case Desire.CREATE_ROBOTS:
+                case Desire.CREATE_ROBOTS: // + AI PROTECTORS
                     if (!intention.getPoint().IsEmpty)
                     {
                         myplan.Add(new Instruction(Instructions.MOVE_TO_HOSHIMI, intention.getPoint()));
                         myplan.Add(new Instruction(Instructions.CREATE_NEEDLE, intention.getPoint()));
+                        // + needle protect
+                        myplan.Add(new Instruction(Instructions.CREATE_NEEDLE_PROTECTOR));
                     }
-                    else if(this.getAASMAFramework().protectorsAlive() < 3)
-                        myplan.Add(new Instruction(Instructions.CREATE_PROTECTOR));
+
+                    else if(_AIProtectors.Count < 3) 
+                        myplan.Add(new Instruction(Instructions.CREATE_AI_PROTECTOR));
+
                     else if (this.getAASMAFramework().containersAlive() < 2)
                         myplan.Add(new Instruction(Instructions.CREATE_CONTAINER));
+                        // + container protectors
                     else if (this.getAASMAFramework().explorersAlive() < 2)
                         myplan.Add(new Instruction(Instructions.CREATE_EXPLORER));
                     else
-                        myplan.Add(new Instruction(Instructions.CREATE_PROTECTOR));
+                        myplan.Add(new Instruction(Instructions.CREATE_RANDOM_PROTECTOR));
 
                     break;
                 case Desire.SEARCH_HOSHIMI:
                     myplan.Add(new Instruction(Instructions.MOVE));
+                    break;
+                case Desire.EMPTY:
+                    myplan.Add(new Instruction(Instructions.DO_NOTHING));
                     break;
                 default:
                     break;
@@ -237,42 +263,72 @@ namespace Deliberative_AASMAHoshimi.Examples
 
             switch (i.getInstruction())
             {
+                case Instructions.DO_NOTHING:
+                    if(_nanoAI.State == NanoBotState.Moving)
+                        this._nanoAI.StopMoving();
+
+                    break;
                 case Instructions.MOVE:
                     if (frontClear())
                         MoveForward();
                     else
                         RandomTurn();
                     break;
+
                 case Instructions.MOVE_TO_HOSHIMI:
-                    if (this.getAASMAFramework().visiblePierres(this._nanoAI).Count > 0) 
+                  /*  if (this.getAASMAFramework().visiblePierres(this._nanoAI).Count > 0) 
                     {
                         Debug.WriteLine(this._nanoAI.InternalName + " is seeing pierres");
                         Debug.WriteLine(this._nanoAI.InternalName + " state 1: " + this._nanoAI.State);
                         if (this._nanoAI.State == NanoBotState.Moving)
-                            this._nanoAI.StopMoving();
+                            
                         Debug.WriteLine(this._nanoAI.InternalName + " state 2: " + this._nanoAI.State);
                     }
                     else
-                    {
+                    { */
                         AASMAMessage msg = new AASMAMessage(this._nanoAI.InternalName, "AIP_$ MOVE TO HOSHIMI");
                         msg.Tag = i.getPoint();
                         getAASMAFramework().broadCastMessage(msg);
 
                         this._nanoAI.MoveTo(i.getPoint());
-                    }
+                   // }
                     break;
-                case Instructions.CREATE_PROTECTOR:
-                    // this._nanoAI.Build(typeof(RandomProtector), "RP" + this._protectorNumber++);
-                     this._nanoAI.Build(typeof(AIProtector), "AIP" + this._protectorNumber++);
-                    // this._nanoAI.Build(typeof(ContainerProtector), "CP" + this._protectorNumber++);
-                    // this._nanoAI.Build(typeof(NeedleProtector), "NP" + this._protectorNumber++);
+
+                case Instructions.CREATE_AI_PROTECTOR:
+                    this._nanoAI.Build(typeof(AIProtector), "AIP" + this._protectorNumber);
+                    _AIProtectors.Add("AIP" + this._protectorNumber++);
                     break;
+                case Instructions.CREATE_CONTAINER_PROTECTOR:
+                    this._nanoAI.Build(typeof(ContainerProtector), "CP" + this._protectorNumber++);
+                    break;
+                case Instructions.CREATE_NEEDLE_PROTECTOR:
+                    String protectorName = "NP" + this._protectorNumber++;
+                    this._nanoAI.Build(typeof(NeedleProtector), protectorName);
+                    // mandar mensagem com o ponto do needle
+                    AASMAMessage msg_to_needle = new AASMAMessage(this._nanoAI.InternalName, "NP_$ MOVE TO NEEDLE LOCATION");
+                    msg_to_needle.Tag = this._nanoAI.Location;
+                    getAASMAFramework().sendMessage(msg_to_needle, protectorName);
+                    break;
+                case Instructions.CREATE_RANDOM_PROTECTOR:
+                    this._nanoAI.Build(typeof(RandomProtector), "RP" + this._protectorNumber++);
+                    break;
+
                 case Instructions.CREATE_EXPLORER:
                     this._nanoAI.Build(typeof(ForwardExplorer), "E" + this._explorerNumber++);
                     break;
+
                 case Instructions.CREATE_CONTAINER:
-                    this._nanoAI.Build(typeof(PassiveContainer), "C" + this._containerNumber++);
+                    this._nanoAI.Build(typeof(PassiveContainer), "C" + this._containerNumber);
+
+                    if(getAASMAFramework().explorersAlive() > 2)
+                    {
+                        AASMAMessage msg_1 = new AASMAMessage(this._nanoAI.InternalName, "E_$ CONTAINER CREATED:C" + this._containerNumber);
+                        msg_1.Tag = i.getPoint();
+                        getAASMAFramework().broadCastMessage(msg_1);
+                    }
+                    this._containerNumber++;
                     break;
+
                 case Instructions.CREATE_NEEDLE:
                     if (getAASMAFramework().overHoshimiPoint(this._nanoAI) &&
                          !getAASMAFramework().overNeedle(this._nanoAI))
@@ -281,6 +337,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                         empty_hoshimi.Remove(this._nanoAI.Location);
                     }
                     break;
+
                 default: break;
             }
         }
@@ -300,25 +357,28 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private bool Succeeded(Intention intention)
         {
-            Debug.Write("AI Succeeded: ");
-            if (intention.getDesire().Equals(Desire.CREATE_ROBOTS) && !intention.getPoint().IsEmpty)
+        //    Debug.Write("AI Succeeded: ");
+            /*if (currentPlan.Count != 0)
+            {
+                return false;
+            }*/
+            if (intention.getDesire().Equals(Desire.CREATE_ROBOTS) /*&& !intention.getPoint().IsEmpty*/)
             {
                 if ( this.getAASMAFramework().overHoshimiPoint(this._nanoAI) && 
                      this.getAASMAFramework().overNeedle(this._nanoAI))
                 {
 
-                    if (empty_hoshimi.Contains(intention.getPoint()))
+                    if (!intention.getPoint().IsEmpty && empty_hoshimi.Contains(intention.getPoint()))
                     {
-                        Debug.WriteLine("false");
                         return false;
                     }
+                    else if (currentPlan.Count != 0)
+                        return false;
 
-                    
                     return true;
                 }
                 else
                 {
-                    Debug.WriteLine("false");
                     return false;
                 }
                     
@@ -328,11 +388,9 @@ namespace Deliberative_AASMAHoshimi.Examples
 
             if (currentPlan.Count != 0)
             {
-                Debug.WriteLine("false");
                 return false;
             }
 
-            Debug.WriteLine("true");
             return true;
         }
 
@@ -341,9 +399,9 @@ namespace Deliberative_AASMAHoshimi.Examples
             //this AI also handles messages, writing them in the debug log file
             //the logData method is very usefull for debbuging purposes
             //it will write the turn number and name of the agent who wrote in the log
-            getAASMAFramework().logData(this._nanoAI, "received message from " + msg.Sender + " : " + msg.Content);
-
-            inbox.Add(msg);
+       //     getAASMAFramework().logData(this._nanoAI, "received message from " + msg.Sender + " : " + msg.Content);
+            if(msg.Content.Contains(_nanoAI.InternalName))
+                inbox.Add(msg);
         }
     }
 }

@@ -54,7 +54,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                     if (getAASMAFramework().isMovablePoint(dest))
                     {
                         this.MoveTo(dest);
-                        Debug.WriteLine(this.InternalName + " Moving towards enemy");
+                  //      Debug.WriteLine(this.InternalName + " Moving towards enemy");
                         return;
                     }
                 }

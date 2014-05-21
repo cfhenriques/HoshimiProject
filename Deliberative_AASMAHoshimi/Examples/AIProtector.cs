@@ -123,8 +123,11 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private void UpdateBeliefs()
         {
-            
-
+            if(HitPoint < 5)
+            {
+                AASMAMessage msg = new AASMAMessage(this.InternalName, "AI$ AIPROTECTOR BEING KILLED");
+                getAASMAFramework().sendMessage(msg, "AI");
+            }
         }
 
         private Desire Options()
@@ -138,7 +141,7 @@ namespace Deliberative_AASMAHoshimi.Examples
             {
                 if (msg.Content.Contains("AIP_$ MOVE TO HOSHIMI"))
                 {
-                    Debug.WriteLine(this.InternalName + " desired to move to hoshimi point");
+                 //   Debug.WriteLine(this.InternalName + " desired to move to hoshimi point");
                     return Desire.GO_TO_PROTEGE;
                 }
 
@@ -162,7 +165,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                         if (Utils.SquareDistance(this.Location, p) <= this.DefenseDistance * this.DefenseDistance)
                             return new Intention(desire, p);
 
-                    Debug.Write(this.InternalName + " is trying to defend no one");
+                    //.Write(this.InternalName + " is trying to defend no one");
                     return new Intention(Desire.EMPTY);
 
                 case Desire.GO_TO_PROTEGE:
@@ -187,14 +190,14 @@ namespace Deliberative_AASMAHoshimi.Examples
                     if (sqrDistanceToAI < sqrRobotScanDistance)
                         return new Intention(Desire.GO_TO_PROTEGE, this.PlayerOwner.AI.Location);
 
-                    Debug.Write(this.InternalName + " is trying to go to an inexistent AI");
+                    //.Write(this.InternalName + " is trying to go to an inexistent AI");
                     return new Intention(Desire.EMPTY);
                 
                 case Desire.SEARCH_PROTEGE:
                     return new Intention(desire);
                 
                 default:
-                    Debug.WriteLine(this.InternalName + " built an empty intention");
+                 //   Debug.WriteLine(this.InternalName + " built an empty intention");
                     return new Intention(Desire.EMPTY);
             }
         }
@@ -240,7 +243,7 @@ namespace Deliberative_AASMAHoshimi.Examples
             switch (i.getInstruction())
             {
                 case Instructions.MOVE:
-                    Debug.WriteLine(this.InternalName+ " is moving randomly");
+                  //  Debug.WriteLine(this.InternalName+ " is moving randomly");
                     if (frontClear())
                         MoveForward();
                     else
@@ -249,7 +252,7 @@ namespace Deliberative_AASMAHoshimi.Examples
                 case Instructions.MOVE_TO:
                     /*if (Utils.SquareDistance(this.Location, i.getPoint()) <= 18)
                     {*/
-                        Debug.WriteLine(this.InternalName + " is moving to AI");
+                  //      Debug.WriteLine(this.InternalName + " is moving to AI");
                         Utils.direction randDir;
                         for (int j = 0; j < 4; j++)
                         {
@@ -299,38 +302,6 @@ namespace Deliberative_AASMAHoshimi.Examples
             }
 
         }
-        /*
-        private void Reconsider(List<Instruction> plan)
-        {
-
-            AASMAMessage[] copy = new AASMAMessage[inbox.Count];
-            inbox.CopyTo(copy);
-            foreach(AASMAMessage msg in copy)
-            {
-                if(msg.Content.Contains("AIP_$ MOVE TO HOSHIMI"))
-                {
-                    Debug.WriteLine(this.InternalName + " reconsidered to move to hoshimi point");
-                    inbox.Remove(msg);
-
-                    if (this.State == NanoBotState.Moving)
-                        this.StopMoving();
-
-                    //plan.Add(new Instruction(Instructions.MOVE_TO, (Point)msg.Tag));
-                    plan.Insert(0, new Instruction(Instructions.MOVE_TO, (Point)msg.Tag));
-                }
-
-            }
-
-            List<Point> pierres = this.getAASMAFramework().visiblePierres(this);
-            if (pierres.Count > 0 && this.State == NanoBotState.Moving)
-            {
-                this.StopMoving();
-                Debug.WriteLine(this.InternalName + " reconsidered to attack pierre");
-                //plan.Add(new Instruction(Instructions.ATTACK, Utils.getNearestPoint(this.Location, pierres)));
-                plan.Insert(0, new Instruction(Instructions.ATTACK, Utils.getNearestPoint(this.Location, pierres)));
-            }
-        }
-        */
         private bool Reconsider(Intention i)
         {
             if (i.getDesire() == Desire.DEFEND_PROTEGE)
