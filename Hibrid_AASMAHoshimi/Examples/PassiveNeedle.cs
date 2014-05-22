@@ -86,42 +86,42 @@ namespace Hibrid_AASMAHoshimi.Examples
 
         public override void DoActions()
         {
+            if (this.State == NanoBotState.WaitingOrders)
+            {
             // reactive behaviour
-            if (getAASMAFramework().visiblePierres(this).Count != 0)
-            {
-                foreach (Point pierre in getAASMAFramework().visiblePierres(this))
+                if (getAASMAFramework().visiblePierres(this).Count != 0)
                 {
-                    if (Utils.SquareDistance(this.Location, pierre) < this.DefenseDistance * this.DefenseDistance)
-                        this.DefendTo(pierre, 1);
+                    foreach (Point pierre in getAASMAFramework().visiblePierres(this))
+                    {
+                        if (Utils.SquareDistance(this.Location, pierre) < this.DefenseDistance * this.DefenseDistance)
+                            this.DefendTo(pierre, 1);
+                    }
+                    UpdateBeliefs();
                 }
-                UpdateBeliefs();
-            }
-            // deliberative behaviour
-            else
-            {
-                deliberativeBehaviour();
+                // deliberative behaviour
+                else
+                {
+                    deliberativeBehaviour();
+                }
             }
         }
 
         private void deliberativeBehaviour()
         {
-            if (this.State == NanoBotState.WaitingOrders)
+            if (currentPlan.Count != 0)
             {
-                if (currentPlan.Count != 0)
-                {
-                    Execute(currentPlan);
-                    UpdateBeliefs();
+                Execute(currentPlan);
+                UpdateBeliefs();
 
 
-                }
-                else
-                {
-                    UpdateBeliefs();
+            }
+            else
+            {
+                UpdateBeliefs();
 
-                    Desire d = Options();
-                    Intention i = Filter(d);
-                    currentPlan = Plan(i);
-                }
+                Desire d = Options();
+                Intention i = Filter(d);
+                currentPlan = Plan(i);
             }
         }
 
