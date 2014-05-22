@@ -91,19 +91,23 @@ namespace Hibrid_AASMAHoshimi.Examples
 
         public override void DoActions()
         {
+            deliberativeBehaviour();
+        }
+
+        private void deliberativeBehaviour()
+        {
             if (!(currentPlan.Count == 0 || Succeeded(currentIntention)))
             {
                 Execute(currentPlan);
                 UpdateBeliefs();
-                
-                
-                if(Reconsider(currentIntention))
+
+                if (Reconsider(currentIntention))
                 {
                     Desire d = Options();
                     currentIntention = Filter(d);
                     currentPlan = Plan(currentIntention);
                 }
-                 
+
             }
             else
             {
@@ -118,7 +122,6 @@ namespace Hibrid_AASMAHoshimi.Examples
 
         private void UpdateBeliefs()
         {
-       //     Debug.WriteLine(this.InternalName + " UpdateBeliefs");
             // if seeing navigation points
             foreach (Point p in this.getAASMAFramework().visibleNavigationPoints(this))
             {

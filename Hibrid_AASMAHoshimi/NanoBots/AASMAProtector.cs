@@ -97,6 +97,30 @@ namespace Hibrid_AASMAHoshimi
 
         public void DoActions()
         {
+            // reactive behaviour
+            if (getAASMAFramework().visiblePierres(this).Count != 0)
+            {
+                foreach (Point pierre in getAASMAFramework().visiblePierres(this))
+                {
+                    if (Utils.SquareDistance(this.Location, pierre) < this.DefenseDistance * this.DefenseDistance)
+                    {
+                        if (this.State == NanoBotState.Moving)
+                            this.StopMoving();
+                        this.DefendTo(pierre, 1);
+                    }
+                }
+                UpdateBeliefs();
+            }
+            // deliberative behaviour
+            else
+            {
+                deliberativeBehaviour();
+            }
+            
+        }
+
+        private void deliberativeBehaviour()
+        {
             if (!(currentPlan.Count == 0 || Succeeded(currentIntention)))
             {
                 Execute(currentPlan);
@@ -118,6 +142,7 @@ namespace Hibrid_AASMAHoshimi
                 currentPlan = Plan(currentIntention);
             }
         }
+
         protected abstract void UpdateBeliefs();
 
         protected Desire Options()
