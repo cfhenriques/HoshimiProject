@@ -21,7 +21,8 @@ namespace Deliberative_AASMAHoshimi.Examples
             SEARCH_AZNPOINT,
             GOTO_AZN,
             SEARCH_NEEDLE,
-            GOTO_NEEDLE
+            GOTO_NEEDLE,
+            DO_NOTHING
         };
 
         enum Instructions
@@ -29,7 +30,8 @@ namespace Deliberative_AASMAHoshimi.Examples
             MOVE,
             MOVE_TO,
             COLLECT,
-            DROP
+            DROP,
+            DO_NOTHING
         }
 
         struct Intention
@@ -171,6 +173,9 @@ namespace Deliberative_AASMAHoshimi.Examples
 
         private Desire Options()
         {
+            if (getAASMAFramework().visiblePierres(this).Count > 0)
+                return Desire.DO_NOTHING;
+
             if (this.Stock.Equals(this.ContainerCapacity)) // full
             {
                 if(empty_needles.Count > 0)
@@ -194,6 +199,7 @@ namespace Deliberative_AASMAHoshimi.Examples
         {
             switch(desire)
             {
+                case Desire.DO_NOTHING:
                 case Desire.SEARCH_AZNPOINT:
                 case Desire.SEARCH_NEEDLE:
                     return new Intention(desire, Point.Empty);
@@ -221,6 +227,9 @@ namespace Deliberative_AASMAHoshimi.Examples
 
             switch (intention.getDesire())
             {
+                case Desire.DO_NOTHING:
+                    myplan.Add(new Instruction(Instructions.DO_NOTHING));
+                    break;
                 case Desire.SEARCH_AZNPOINT:
                 case Desire.SEARCH_NEEDLE:
                     myplan.Add(new Instruction(Instructions.MOVE));
@@ -259,6 +268,10 @@ namespace Deliberative_AASMAHoshimi.Examples
 
             switch (i.getInstruction())
             {
+                case Instructions.DO_NOTHING:
+                    if (State == NanoBotState.Moving)
+                        StopMoving();
+                    break;
                 case Instructions.MOVE_TO:
                     Point p = i.getDest();
                     this.MoveTo(p);
@@ -323,20 +336,27 @@ namespace Deliberative_AASMAHoshimi.Examples
         private bool Reconsider(Intention i)
         {
 
-            if (i.getDesire() == Desire.GOTO_AZN && getAASMAFramework().visibleAznPoints(this).Count > 0 && !getAASMAFramework().overAZN(this))
-            {
-            //    if (State == NanoBotState.Moving)
-            //        StopMoving();
-
+            if (getAASMAFramework().visiblePierres(this).Count > 0)
                 return true;
+
+
+            if (State == NanoBotState.Moving && i.getDesire() == Desire.GOTO_AZN && getAASMAFramework().visibleAznPoints(this).Count > 0 && !getAASMAFramework().overAZN(this))
+            {
+                int dist = Utils.SquareDistance(this.Location, i.getDest());
+                Point nearest = Utils.getNearestPoint(this.Location, azn_points);
+                int distToNearest = Utils.SquareDistance(this.Location, nearest);
+                if(distToNearest/dist <= 0.5)
+                    return true;
             }
-                
 
-            if (i.getDesire() == Desire.GOTO_NEEDLE && getAASMAFramework().visibleEmptyNeedles(this).Count > 0 && !getAASMAFramework().overEmptyNeedle(this))
+
+            if (State == NanoBotState.Moving && i.getDesire() == Desire.GOTO_NEEDLE && getAASMAFramework().visibleEmptyNeedles(this).Count > 0 && !getAASMAFramework().overEmptyNeedle(this))
             {
-            //    if (State == NanoBotState.Moving)
-            //        StopMoving();
-                return true;
+                int dist = Utils.SquareDistance(this.Location, i.getDest());
+                Point nearest = Utils.getNearestPoint(this.Location, empty_needles);
+                int distToNearest = Utils.SquareDistance(this.Location, nearest);
+                if (distToNearest / dist <= 0.5)
+                    return true;
             }
 
             return false;
