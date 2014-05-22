@@ -86,6 +86,25 @@ namespace Hibrid_AASMAHoshimi.Examples
 
         public override void DoActions()
         {
+            // reactive behaviour
+            if (getAASMAFramework().visiblePierres(this).Count != 0)
+            {
+                foreach (Point pierre in getAASMAFramework().visiblePierres(this))
+                {
+                    if (Utils.SquareDistance(this.Location, pierre) < this.DefenseDistance * this.DefenseDistance)
+                        this.DefendTo(pierre, 1);
+                }
+                UpdateBeliefs();
+            }
+            // deliberative behaviour
+            else
+            {
+                deliberativeBehaviour();
+            }
+        }
+
+        private void deliberativeBehaviour()
+        {
             if (this.State == NanoBotState.WaitingOrders)
             {
                 if (currentPlan.Count != 0)

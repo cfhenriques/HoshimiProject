@@ -91,28 +91,48 @@ namespace Hibrid_AASMAHoshimi.Examples
 
         public override void DoActions()
         {
-                if (currentPlan.Count != 0 || !Succeeded(currentIntention))
-                {
-                    Execute(currentPlan);
-                    UpdateBeliefs();
+            // reactive behaviour
+            if (Stock < ContainerCapacity && this.getAASMAFramework().overAZN(this))
+            {
+                Debug.WriteLine(this.InternalName + " reactive: collecting AZN");
+                this.collectAZN();
+            }
+            else if (Stock > 0 && this.getAASMAFramework().overEmptyNeedle(this))
+            {
+                Debug.WriteLine(this.InternalName + " reactive: dropping AZN");
+                this.transferAZN();
+            }
+            // deliberative behaviour
+            else
+            {
+                deliberativeBehaviour();
+            }
+        }
 
-                    if(Reconsider(currentIntention))
-                    {
-                        Desire d = Options();
-                        currentIntention = Filter(d);
-                        currentPlan = Plan(currentIntention);
-                    }
-                }
-                else
-                {
-                    UpdateBeliefs();
+        private void deliberativeBehaviour()
+        {
+            if (currentPlan.Count != 0 || !Succeeded(currentIntention))
+            {
+                Execute(currentPlan);
+                UpdateBeliefs();
 
+                if (Reconsider(currentIntention))
+                {
                     Desire d = Options();
                     currentIntention = Filter(d);
                     currentPlan = Plan(currentIntention);
                 }
-            // }
+            }
+            else
+            {
+                UpdateBeliefs();
+
+                Desire d = Options();
+                currentIntention = Filter(d);
+                currentPlan = Plan(currentIntention);
+            }
         }
+
 
         private void UpdateBeliefs()
         {
@@ -322,22 +342,11 @@ namespace Hibrid_AASMAHoshimi.Examples
 
         private bool Reconsider(Intention i)
         {
-
             if (i.getDesire() == Desire.GOTO_AZN && getAASMAFramework().visibleAznPoints(this).Count > 0 && !getAASMAFramework().overAZN(this))
-            {
-            //    if (State == NanoBotState.Moving)
-            //        StopMoving();
-
                 return true;
-            }
-                
 
             if (i.getDesire() == Desire.GOTO_NEEDLE && getAASMAFramework().visibleEmptyNeedles(this).Count > 0 && !getAASMAFramework().overEmptyNeedle(this))
-            {
-            //    if (State == NanoBotState.Moving)
-            //        StopMoving();
                 return true;
-            }
 
             return false;
         }
